@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.terraskills.powers.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ForgeEventHandlerMixin",
+    "CollapseRecipeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

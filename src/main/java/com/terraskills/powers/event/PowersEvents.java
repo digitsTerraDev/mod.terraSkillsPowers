@@ -1,0 +1,95 @@
+package com.terraskills.powers.event;
+
+import com.terraskills.powers.TerraSkillsPowers;
+import com.terraskills.powers.network.SkillRanksPayload;
+import com.terraskills.powers.skill.SkillRanks;
+import net.dries007.tfc.common.TFCTags;
+import net.dries007.tfc.util.data.Support;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+@EventBusSubscriber(modid = TerraSkillsPowers.MOD_ID)
+public final class PowersEvents {
+    private static final long ASSESSMENT_COOLDOWN_TICKS = 100L;
+    private static final Map<UUID, Long> LAST_ASSESSMENT = new HashMap<>();
+
+    private PowersEvents() {}
+
+    @SubscribeEvent
+    public static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
+        Player player = event.getEntity();
+        ItemStack tool = player.getMainHandItem();
+        BlockState state = event.getState();
+        float multiplier = 1.0F;
+
+        if (tool.is(ItemTags.PICKAXES)) {
+            multiplier += 0.05F * SkillRanks.mining(player);
+            if (player.blockPosition().getY() < 0) multiplier += 0.05F * SkillRanks.deepMining(player);
+            if (state.is(TFCTags.Blocks.STONES_RAW)) multiplier += 0.04F * SkillRanks.stoneMining(player);
+        }
+        if (tool.is(ItemTags.SHOVELS) && state.is(BlockTags.MINEABLE_WITH_SHOVEL)) {
+            multiplier += 0.03F * SkillRanks.excavating(player);
+        }
+        if (multiplier != 1.0F) event.setNewSpeed(event.getOriginalSpeed() * multiplier);
+    }
+
+    @SubscribeEvent
+    public static void onFall(LivingFallEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            event.setDistance(Math.max(0, event.getDistance() - 0.5F * SkillRanks.heightsTraining(player)));
+        }
+    }
+
+    @SubscribeEvent
+    public static void onAssessment(PlayerInteractEvent.RightClickBlock event) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || event.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND
+                || !player.isShiftKeyDown() || !player.getMainHandItem().is(ItemTags.PICKAXES)) return;
+
+        int rank = SkillRanks.rank(player, "support_assessment");
+        if (rank == 0) return;
+        long now = player.serverLevel().getGameTime();
+        if (now - LAST_ASSESSMENT.getOrDefault(player.getUUID(), Long.MIN_VALUE) < ASSESSMENT_COOLDOWN_TICKS) {
+            player.displayClientMessage(Component.translatable("message.terraskillspowers.assessment.cooldown").withStyle(ChatFormatting.GRAY), true);
+            return;
+        }
+        LAST_ASSESSMENT.put(player.getUUID(), now);
+
+        int radius = rank - 1;
+        BlockPos center = event.getPos();
+        int candidates = (int) Support.findUnsupportedPositions(player.serverLevel(), center.offset(-radius, -radius, -radius), center.offset(radius, radius, radius))
+                .stream().filter(pos -> player.serverLevel().getBlockState(pos).is(TFCTags.Blocks.CAN_START_COLLAPSE)).count();
+        player.displayClientMessage(Component.translatable("message.terraskillspowers.assessment.result", candidates, radius), false);
+    }
+
+    @SubscribeEvent
+    public static void onPlayerTick(net.neoforged.neoforge.event.tick.PlayerTickEvent.Post event) {
+        if (event.getEntity() instanceof ServerPlayer player && player.tickCount % 20 == 0) syncRanks(player);
+    }
+
+    @SubscribeEvent
+    public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) syncRanks(player);
+    }
+
+    private static void syncRanks(ServerPlayer player) {
+        PacketDistributor.sendToPlayer(player, new SkillRanksPayload(SkillRanks.mining(player), SkillRanks.deepMining(player),
+                SkillRanks.stoneMining(player), SkillRanks.excavating(player)));
+    }
+}

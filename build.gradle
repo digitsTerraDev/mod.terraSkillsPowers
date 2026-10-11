@@ -14,7 +14,8 @@ tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
 }
 
-version = mod_version
+// Tagged CI releases override this so the JAR version always matches the Git tag.
+version = providers.gradleProperty('release_version').orElse(mod_version).get()
 group = mod_group_id
 
 sourceSets.main.resources {
@@ -27,7 +28,9 @@ sourceSets.main.resources {
 }
 
 repositories {
-    // Add here additional repositories if required by some of the dependencies below.
+    maven { url = uri('https://maven.puffish.net') }
+    maven { url = uri('https://api.modrinth.com/maven') }
+    maven { url = uri('https://maven.blamejared.com') }
 }
 
 base {
@@ -116,6 +119,9 @@ configurations {
 }
 
 dependencies {
+    implementation "maven.modrinth:terrafirmacraft:${tfc_version}"
+    implementation "net.puffish:skillsmod:${puffish_skills_version}:neoforge"
+    localRuntime "vazkii.patchouli:Patchouli:${patchouli_version}"
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
@@ -151,6 +157,8 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_name               : mod_name,
             mod_license            : mod_license,
             mod_version            : mod_version,
+            tfc_version            : tfc_version,
+            puffish_skills_version : puffish_skills_version,
     ]
     inputs.properties replaceProperties
     expand replaceProperties
