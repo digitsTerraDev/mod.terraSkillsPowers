@@ -34,6 +34,12 @@ so resets and refunds take effect without a second progression store.
   players with Mining IV and a Brutish Mining rank. It adds 50--250% mining
   speed and applies 3x--5x pickaxe/shovel mining wear, carrying fractional
   charges per tool. It resets when the player dies or logs out.
+- **Careful Eye:** `careful_eye_1` through `_5` make one 0.2--1.0% server-side
+  roll per eligible natural TFC raw-rock break. Player-placed raw rock is
+  persistently excluded; drops use editable, weighted TFC worldgen-derived
+  rock-to-gem associations in the server config. Piston-moved raw stone is
+  conservatively excluded at its destination; modded movers should mark their
+  destination through the provenance API before allowing discovery rolls.
 
 Missing Pufferfish nodes are treated as rank zero, so a configuration reload,
 refund, or reset is always safe.
