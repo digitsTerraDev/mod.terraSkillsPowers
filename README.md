@@ -40,14 +40,21 @@ so resets and refunds take effect without a second progression store.
   rock-to-gem associations in the server config. Piston-moved raw stone is
   conservatively excluded at its destination; modded movers should mark their
   destination through the provenance API before allowing discovery rolls.
+- **Hazard Management:** the modpack registers shore blocks/items itself (for
+  example through KubeJS). This mod recognizes the configured block IDs as
+  shores, enforces their configured Hazard Management placement rank, and makes
+  the nearest unused shore in range attempt to arrest each TFC propagation
+  front. A shore is consumed on either result. The `hazardManagement.shores`
+  server-config entries use `block_id=base_chance,required_rank`; defaults are
+  `kubejs:copper_braced_shore=0.10,1` and
+  `kubejs:black_steel_shore=0.45,4`. With the default +10% per triggering
+  miner rank, those give 20--60% and 85--95% at their intended ranks.
 
 Missing Pufferfish nodes are treated as rank zero, so a configuration reload,
 refund, or reset is always safe.
 
-Tool Conservation, Brutish Mining, Careful Eye, Hazard Management, and the
-other proposed powers are deliberately not implemented: their required TFC
-durability, provenance, support-item, or broader gameplay hooks are not yet
-present.
+The broader proposed trees remain deliberately unimplemented until their
+underlying gameplay systems and integration hooks are designed.
 
 ## Build
 
