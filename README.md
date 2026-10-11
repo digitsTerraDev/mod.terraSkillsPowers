@@ -12,8 +12,9 @@ so resets and refunds take effect without a second progression store.
   seconds. This is an inspection only, not a collapse prediction.
 - **Careful Mining:** `careful_mining_1` through `_5` reduces *only* TFC's real
   collapse initiation roll for the player who broke the block by 10% per rank.
-  Fake warnings, support checks, propagation, explosions, and all non-mining
-  causes retain TFC behaviour.
+  The fake-warning roll itself and non-mining paths are untouched; because TFC
+  evaluates that roll after a failed real-collapse roll, fake warnings can
+  occur more often for trained miners.
 - **Contextual speed:** mining (also accepts the legacy `miner` IDs),
   `deep_mining`, `stone_mining` (also accepts `stoneworking`), and
   `excavating` are applied through `BreakSpeed`. Ranks are sent to the client
@@ -22,10 +23,8 @@ so resets and refunds take effect without a second progression store.
 - **Heights Training:** uses `heights_training_*`, falling back to the
   progress-preserving `mine_safety_*` IDs, to add 0.5 safe blocks per rank.
 
-The current public TerraSkills tree does not yet define the brief's
-`support_assessment_*`, `careful_mining_*`, `stone_mining_*`, or
-`excavating_*` nodes. The bridge treats missing nodes as rank zero; add those
-definitions to `terraskills:miner` before expecting their effects.
+Missing Pufferfish nodes are treated as rank zero, so a configuration reload,
+refund, or reset is always safe.
 
 Tool Conservation, Brutish Mining, Careful Eye, Hazard Management, and the
 other proposed powers are deliberately not implemented: their required TFC

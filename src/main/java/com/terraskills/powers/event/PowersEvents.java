@@ -8,6 +8,7 @@ import net.dries007.tfc.util.data.Support;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
@@ -19,7 +20,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,8 +31,7 @@ import java.util.UUID;
 @EventBusSubscriber(modid = TerraSkillsPowers.MOD_ID)
 public final class PowersEvents {
     private static final long ASSESSMENT_COOLDOWN_TICKS = 100L;
-    private static final Map<UUID, Long> LAST_ASSESSMENT = new HashMap<>();
-
+    private static final Map<UUID, AssessmentCooldown> LAST_ASSESSMENT = new HashMap<>();
     private PowersEvents() {}
 
     @SubscribeEvent
@@ -59,22 +61,29 @@ public final class PowersEvents {
 
     @SubscribeEvent
     public static void onAssessment(PlayerInteractEvent.RightClickBlock event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || event.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND
+        if (!(event.getEntity() instanceof ServerPlayer player)
+                || event.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND
                 || !player.isShiftKeyDown() || !player.getMainHandItem().is(ItemTags.PICKAXES)) return;
 
         int rank = SkillRanks.rank(player, "support_assessment");
         if (rank == 0) return;
+
+        ResourceKey<net.minecraft.world.level.Level> dimension = player.level().dimension();
         long now = player.serverLevel().getGameTime();
-        if (now - LAST_ASSESSMENT.getOrDefault(player.getUUID(), Long.MIN_VALUE) < ASSESSMENT_COOLDOWN_TICKS) {
-            player.displayClientMessage(Component.translatable("message.terraskillspowers.assessment.cooldown").withStyle(ChatFormatting.GRAY), true);
+        AssessmentCooldown previous = LAST_ASSESSMENT.get(player.getUUID());
+        if (previous != null && previous.dimension().equals(dimension) && now >= previous.gameTime()
+                && now - previous.gameTime() < ASSESSMENT_COOLDOWN_TICKS) {
+            player.displayClientMessage(Component.translatable("message.terraskillspowers.assessment.cooldown")
+                    .withStyle(ChatFormatting.GRAY), true);
             return;
         }
-        LAST_ASSESSMENT.put(player.getUUID(), now);
+        LAST_ASSESSMENT.put(player.getUUID(), new AssessmentCooldown(dimension, now));
 
         int radius = rank - 1;
         BlockPos center = event.getPos();
-        int candidates = (int) Support.findUnsupportedPositions(player.serverLevel(), center.offset(-radius, -radius, -radius), center.offset(radius, radius, radius))
-                .stream().filter(pos -> player.serverLevel().getBlockState(pos).is(TFCTags.Blocks.CAN_START_COLLAPSE)).count();
+        int candidates = (int) Support.findUnsupportedPositions(player.serverLevel(),
+                        center.offset(-radius, -radius, -radius), center.offset(radius, radius, radius)).stream()
+                .filter(pos -> player.serverLevel().getBlockState(pos).is(TFCTags.Blocks.CAN_START_COLLAPSE)).count();
         player.displayClientMessage(Component.translatable("message.terraskillspowers.assessment.result", candidates, radius), false);
     }
 
@@ -88,8 +97,20 @@ public final class PowersEvents {
         if (event.getEntity() instanceof ServerPlayer player) syncRanks(player);
     }
 
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        LAST_ASSESSMENT.remove(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event) {
+        LAST_ASSESSMENT.clear();
+    }
+
     private static void syncRanks(ServerPlayer player) {
         PacketDistributor.sendToPlayer(player, new SkillRanksPayload(SkillRanks.mining(player), SkillRanks.deepMining(player),
                 SkillRanks.stoneMining(player), SkillRanks.excavating(player)));
     }
+
+    private record AssessmentCooldown(ResourceKey<net.minecraft.world.level.Level> dimension, long gameTime) {}
 }
