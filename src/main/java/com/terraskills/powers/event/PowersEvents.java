@@ -1,6 +1,10 @@
 package com.terraskills.powers.event;
 
 import com.terraskills.powers.TerraSkillsPowers;
+import com.terraskills.powers.mining.ExcavationReach;
+import com.terraskills.powers.mining.BrutishMining;
+import com.terraskills.powers.mining.MiningDurability;
+import com.terraskills.powers.client.ClientSkillRanks;
 import com.terraskills.powers.network.SkillRanksPayload;
 import com.terraskills.powers.skill.SkillRanks;
 import net.dries007.tfc.common.TFCTags;
@@ -49,7 +53,12 @@ public final class PowersEvents {
         if (tool.is(ItemTags.SHOVELS) && state.is(BlockTags.MINEABLE_WITH_SHOVEL)) {
             multiplier += 0.03F * SkillRanks.excavating(player);
         }
-        if (multiplier != 1.0F) event.setNewSpeed(event.getOriginalSpeed() * multiplier);
+        if (tool.is(ItemTags.PICKAXES) || tool.is(ItemTags.SHOVELS)) {
+            int brutishRank = player instanceof ServerPlayer server ? BrutishMining.activeRank(server)
+                    : ClientSkillRanks.brutishActive() ? ClientSkillRanks.brutishMining() : 0;
+            multiplier += 0.50F * brutishRank;
+        }
+        if (multiplier != 1.0F) event.setNewSpeed(event.getNewSpeed() * multiplier);
     }
 
     @SubscribeEvent
@@ -89,27 +98,52 @@ public final class PowersEvents {
 
     @SubscribeEvent
     public static void onPlayerTick(net.neoforged.neoforge.event.tick.PlayerTickEvent.Post event) {
-        if (event.getEntity() instanceof ServerPlayer player && player.tickCount % 20 == 0) syncRanks(player);
+        if (event.getEntity() instanceof ServerPlayer player) {
+            // Tool swaps are observed within one tick; rank changes are checked alongside the existing one-second sync.
+            ExcavationReach.reconcile(player, player.tickCount % 20 == 0);
+            if (player.tickCount % 20 == 0) syncRanks(player);
+        }
     }
 
     @SubscribeEvent
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) syncRanks(player);
+        if (event.getEntity() instanceof ServerPlayer player) {
+            ExcavationReach.clear(player);
+            ExcavationReach.reconcile(player, true);
+            syncRanks(player);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerClone(PlayerEvent.Clone event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            ExcavationReach.clear(player);
+            if (event.getOriginal() instanceof ServerPlayer original) ExcavationReach.clear(original);
+            BrutishMining.clear(player.getUUID());
+            MiningDurability.clear(player.getUUID());
+        }
     }
 
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         LAST_ASSESSMENT.remove(event.getEntity().getUUID());
+        ExcavationReach.forget(event.getEntity().getUUID());
+        BrutishMining.clear(event.getEntity().getUUID());
+        MiningDurability.clear(event.getEntity().getUUID());
     }
 
     @SubscribeEvent
     public static void onServerStopped(ServerStoppedEvent event) {
         LAST_ASSESSMENT.clear();
+        ExcavationReach.clearAll();
+        BrutishMining.clearAll();
+        MiningDurability.clearAll();
     }
 
-    private static void syncRanks(ServerPlayer player) {
+    public static void syncRanks(ServerPlayer player) {
+        int brutishRank = BrutishMining.rank(player);
         PacketDistributor.sendToPlayer(player, new SkillRanksPayload(SkillRanks.mining(player), SkillRanks.deepMining(player),
-                SkillRanks.stoneMining(player), SkillRanks.excavating(player)));
+                SkillRanks.stoneMining(player), SkillRanks.excavating(player), brutishRank, BrutishMining.isActive(player)));
     }
 
     private record AssessmentCooldown(ResourceKey<net.minecraft.world.level.Level> dimension, long gameTime) {}

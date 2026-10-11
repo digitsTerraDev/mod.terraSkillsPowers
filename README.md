@@ -22,6 +22,18 @@ so resets and refunds take effect without a second progression store.
   authoritative Pufferfish state.
 - **Heights Training:** uses `heights_training_*`, falling back to the
   progress-preserving `mine_safety_*` IDs, to add 0.5 safe blocks per rank.
+- **Excavation Reach:** `careful_excavation_1` through `_5` grant +0.5 block
+  interaction range per rank while a main-hand pickaxe or shovel is held. The
+  transient modifier is removed immediately when the tool or skill no longer
+  qualifies, and replaces the old `terra:excavation_reach` KubeJS modifier.
+- **Tool Conservation:** `tool_conservation_1` through `_5` has one 3--15%
+  roll per TFC pickaxe/shovel mining charge. A successful roll skips the whole
+  charge before TFC and Unbreaking handle durability; combat and unrelated
+  item-use wear are not intercepted. Brutish Mining doubles this chance.
+- **Brutish Mining:** the `B` key toggles this server-authoritative mode for
+  players with Mining IV and a Brutish Mining rank. It adds 50--250% mining
+  speed and applies 3x--5x pickaxe/shovel mining wear, carrying fractional
+  charges per tool. It resets when the player dies or logs out.
 
 Missing Pufferfish nodes are treated as rank zero, so a configuration reload,
 refund, or reset is always safe.

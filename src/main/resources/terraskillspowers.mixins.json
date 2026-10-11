@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ForgeEventHandlerMixin",
-    "CollapseRecipeMixin"
+    "CollapseRecipeMixin",
+    "ToolItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1

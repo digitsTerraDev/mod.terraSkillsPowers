@@ -1,4 +1,7 @@
 {
   "message.terraskillspowers.assessment.cooldown": "Support assessment is recharging.",
-  "message.terraskillspowers.assessment.result": "Support assessment: %s unsupported collapse candidate(s) within %s block(s)."
+  "message.terraskillspowers.assessment.result": "Support assessment: %s unsupported collapse candidate(s) within %s block(s).",
+  "key.terraskillspowers.toggle_brutish": "Toggle Brutish Mining",
+  "key.categories.terraskillspowers": "TerraSkills Powers",
+  "hud.terraskillspowers.brutish_active": "Brutish Mining: Active"
 }
