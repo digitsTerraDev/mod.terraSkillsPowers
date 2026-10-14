@@ -31,6 +31,7 @@ repositories {
     maven { url = uri('https://maven.puffish.net') }
     maven { url = uri('https://api.modrinth.com/maven') }
     maven { url = uri('https://maven.blamejared.com') }
+    maven { url = uri('https://www.cursemaven.com') }
 }
 
 base {
@@ -121,7 +122,17 @@ configurations {
 dependencies {
     implementation "maven.modrinth:terrafirmacraft:${tfc_version}"
     implementation "net.puffish:skillsmod:${puffish_skills_version}:neoforge"
+    // Optional runtime integrations. The mixin plugin only loads their mixin when every target mod is present.
+    compileOnly "curse.maven:astikor-carts-redux-916493:6967087"
+    compileOnly "curse.maven:astikor-carts-tfc-844019:8054123"
+    compileOnly "maven.modrinth:RWQYcqFx:Dr2VvSV3"
     localRuntime "vazkii.patchouli:Patchouli:${patchouli_version}"
+    // Development-client test set for the optional handcart integration.
+    localRuntime "curse.maven:astikor-carts-redux-916493:6967087"
+    // 1.2 uses a filesystem provider unavailable in NeoForge's development union filesystem.
+    localRuntime "curse.maven:tfc-registry-api-1396119:7322201"
+    localRuntime "curse.maven:astikor-carts-tfc-844019:8054123"
+    localRuntime "maven.modrinth:RWQYcqFx:Dr2VvSV3"
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"

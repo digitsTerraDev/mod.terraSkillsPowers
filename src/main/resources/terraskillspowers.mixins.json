@@ -1,11 +1,13 @@
 {
   "required": true,
   "package": "com.terraskills.powers.mixin",
+  "plugin": "com.terraskills.powers.mixin.TerraSkillsPowersMixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ForgeEventHandlerMixin",
     "CollapseRecipeMixin",
-    "ToolItemMixin"
+    "ToolItemMixin",
+    "TFCHandCartWeightMixin"
   ],
   "injectors": {
     "defaultRequire": 1

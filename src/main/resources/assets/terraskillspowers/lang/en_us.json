@@ -4,5 +4,8 @@
   "key.terraskillspowers.toggle_brutish": "Toggle Brutish Mining",
   "key.categories.terraskillspowers": "TerraSkills Powers",
   "hud.terraskillspowers.brutish_active": "Brutish Mining: Active",
-  "message.terraskillspowers.hazard.rank_required": "Hazard Management %s is required to place this shore."
+  "message.terraskillspowers.hazard.rank_required": "Hazard Management %s is required to place this shore.",
+  "message.terraskillspowers.handcart_too_heavy": "The handcart is too heavy to move.",
+  "hud.terraskillspowers.handcart_weight": "Handcart: %s / %s kg",
+  "hud.terraskillspowers.handcart_too_heavy": "Handcart too heavy: %s / %s kg"
 }

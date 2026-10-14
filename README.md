@@ -49,6 +49,12 @@ so resets and refunds take effect without a second progression store.
   `kubejs:copper_braced_shore=0.10,1` and
   `kubejs:black_steel_shore=0.45,4`. With the default +10% per triggering
   miner rank, those give 20--60% and 85--95% at their intended ranks.
+- **TFC Astikor handcarts:** when TFC Astikor Carts and Warfactory Ultimate
+  Weight are installed, a handcart holds five times the puller's remaining
+  Ultimate Weight capacity. It applies TFC's overburdened effect between that
+  limit and 120% of it, then pins the puller and reports that the cart is too
+  heavy. The calculation includes Ultimate Weight's equipment capacity bonuses
+  and nested-container weights.
 
 Missing Pufferfish nodes are treated as rank zero, so a configuration reload,
 refund, or reset is always safe.

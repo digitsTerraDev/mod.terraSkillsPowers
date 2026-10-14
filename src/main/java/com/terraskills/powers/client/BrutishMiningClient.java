@@ -5,13 +5,11 @@ import com.terraskills.powers.TerraSkillsPowers;
 import com.terraskills.powers.network.ToggleBrutishPayload;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
@@ -26,17 +24,10 @@ public final class BrutishMiningClient {
     public static void onClientTick(ClientTickEvent.Post event) {
         if (Minecraft.getInstance().player == null) {
             ClientSkillRanks.clear();
+            ClientHandcartWeight.clear();
             return;
         }
         while (TOGGLE.consumeClick()) PacketDistributor.sendToServer(ToggleBrutishPayload.INSTANCE);
-    }
-
-    @SubscribeEvent
-    public static void renderHud(RenderGuiEvent.Post event) {
-        if (ClientSkillRanks.brutishActive()) {
-            event.getGuiGraphics().drawString(net.minecraft.client.Minecraft.getInstance().font,
-                    Component.translatable("hud.terraskillspowers.brutish_active"), 8, 8, 0xFFFFAA00, true);
-        }
     }
 
     @EventBusSubscriber(value = Dist.CLIENT, modid = TerraSkillsPowers.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
