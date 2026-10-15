@@ -101,6 +101,9 @@ public final class SkillRanks {
         return rank(player, "mule_expedition_balance", "expedition_balance");
     }
 
+    public static int horseArmorWeight(ServerPlayer player) { return rank(player, "horse_armor_weight", "mount_armor_weight"); }
+    public static int horseArmorEffectiveness(ServerPlayer player) { return rank(player, "horse_armor_effectiveness", "mount_armor_effectiveness"); }
+
     public static int mountSpeed(ServerPlayer player) { return rank(player, "mount_speed"); }
     public static int horseSpeed(ServerPlayer player) { return rank(player, "horse_speed"); }
     public static int muleSpeed(ServerPlayer player) { return rank(player, "mule_speed"); }

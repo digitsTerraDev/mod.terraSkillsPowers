@@ -332,7 +332,8 @@ public final class PowersEvents {
         if (!(horse.getControllingPassenger() instanceof Player rider)) return new HorseBackLoad(0.0D, 0.0D);
         double capacityKg = WeightSkillPowers.horseBackCapacityKg(horse, rider,
                 UltimateWeightCommon.bootstrap().config().defaultCarryCapacityKg());
-        double armorWeightKg = WeightViews1211.weightOf(horse.getItemBySlot(EquipmentSlot.BODY));
+        double armorWeightKg = WeightSkillPowers.effectiveArmorWeightKg(rider,
+                WeightViews1211.weightOf(horse.getItemBySlot(EquipmentSlot.BODY)));
         double totalWeightKg = armorWeightKg;
         for (Entity passenger : horse.getPassengers()) {
             if (passenger instanceof Player player) totalWeightKg += WeightViews1211.totalWeight(player);

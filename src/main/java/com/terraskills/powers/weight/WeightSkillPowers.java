@@ -99,6 +99,12 @@ public final class WeightSkillPowers {
         return weightKg;
     }
 
+    public static double effectiveArmorWeightKg(Player rider, double weightKg) {
+        return rider instanceof ServerPlayer server
+                ? AnimalWeightApi.horseArmorEffectiveWeight(weightKg, SkillRanks.horseArmorWeight(server))
+                : weightKg;
+    }
+
     private static boolean isPackAnimal(AbstractHorse horse) {
         return horse instanceof Donkey || horse instanceof Mule;
     }

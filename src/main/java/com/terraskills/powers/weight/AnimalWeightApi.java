@@ -32,6 +32,15 @@ public final class AnimalWeightApi {
         return weightKg * Math.max(0.0D, 1.0D - reduction);
     }
 
+    public static double horseArmorEffectiveWeight(double armorWeightKg, int rank) {
+        double reduction = PowersConfig.HORSE_ARMOR_WEIGHT_REDUCTION_PER_RANK.get() * Math.max(0, rank);
+        return armorWeightKg * Math.max(0.0D, 1.0D - reduction);
+    }
+
+    public static double horseArmorEffectivenessMultiplier(int rank) {
+        return 1.0D + PowersConfig.HORSE_ARMOR_EFFECTIVENESS_PER_RANK.get() * Math.max(0, rank);
+    }
+
     public static double mountSpeedMultiplier(int rank) { return 1.0D + PowersConfig.MOUNT_SPEED_PERCENT_PER_RANK.get() * Math.max(0, rank); }
     public static double horseSpeedMultiplier(int rank) { return 1.0D + PowersConfig.HORSE_SPEED_PERCENT_PER_RANK.get() * Math.max(0, rank); }
     public static double muleSpeedMultiplier(int rank) { return 1.0D + PowersConfig.MULE_SPEED_PERCENT_PER_RANK.get() * Math.max(0, rank); }

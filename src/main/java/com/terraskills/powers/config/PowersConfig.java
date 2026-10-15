@@ -46,6 +46,8 @@ public final class PowersConfig {
     public static final ModConfigSpec.DoubleValue HORSE_LIGHT_HARNESS_STEP_LIMIT_PER_RANK;
     public static final ModConfigSpec.DoubleValue DONKEY_DRAFT_HARNESS_PULL_PERCENT_PER_RANK;
     public static final ModConfigSpec.DoubleValue MULE_EXPEDITION_BALANCE_REDUCTION_PER_RANK;
+    public static final ModConfigSpec.DoubleValue HORSE_ARMOR_WEIGHT_REDUCTION_PER_RANK;
+    public static final ModConfigSpec.DoubleValue HORSE_ARMOR_EFFECTIVENESS_PER_RANK;
     public static final ModConfigSpec.DoubleValue MOUNT_SPEED_PERCENT_PER_RANK;
     public static final ModConfigSpec.DoubleValue HORSE_SPEED_PERCENT_PER_RANK;
     public static final ModConfigSpec.DoubleValue MULE_SPEED_PERCENT_PER_RANK;
@@ -138,6 +140,10 @@ public final class PowersConfig {
                 .defineInRange("donkeyDraftHarnessPullPercentPerRank", 0.10D, 0.0D, 10.0D);
         MULE_EXPEDITION_BALANCE_REDUCTION_PER_RANK = builder.comment("Expedition Balance skill: rider, armor, and animal-cart passenger weight reduction per rank for mules.")
                 .defineInRange("muleExpeditionBalanceReductionPerRank", 0.05D, 0.0D, 1.0D);
+        HORSE_ARMOR_WEIGHT_REDUCTION_PER_RANK = builder.comment("Horse Armor Weight skill: equipped body-armor weight reduction per rank.")
+                .defineInRange("horseArmorWeightReductionPerRank", 0.05D, 0.0D, 1.0D);
+        HORSE_ARMOR_EFFECTIVENESS_PER_RANK = builder.comment("Horse Armor Effectiveness skill: percent more armor and toughness from equipped body armor per rank.")
+                .defineInRange("horseArmorEffectivenessPerRank", 0.10D, 0.0D, 10.0D);
         MOUNT_SPEED_PERCENT_PER_RANK = builder.comment("Mount Speed skill: movement-speed increase per rank for a ridden horse-like animal.")
                 .defineInRange("mountSpeedPercentPerRank", 0.05D, 0.0D, 10.0D);
         HORSE_SPEED_PERCENT_PER_RANK = builder.comment("Horse Speed skill: additional movement-speed increase per rank for horses.")
