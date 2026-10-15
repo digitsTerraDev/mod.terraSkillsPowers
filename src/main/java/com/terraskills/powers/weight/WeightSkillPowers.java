@@ -20,7 +20,7 @@ public final class WeightSkillPowers {
     }
 
     public static double horsePullCapacityKg(AbstractHorse horse, Player rider, double baseCapacityKg) {
-        double capacityKg = baseCapacityKg * pullMultiplier(horse);
+        double capacityKg = baseCapacityKg;
         if (!(rider instanceof ServerPlayer server)) return Math.max(0.0D, capacityKg);
 
         double ridingPercent = PowersConfig.RIDING_PULL_PERCENT_PER_RANK.get() * SkillRanks.ridingPullPercent(server);
@@ -67,12 +67,17 @@ public final class WeightSkillPowers {
     }
 
     public static double speedMultiplier(AbstractHorse horse, Player rider, double loadRatio) {
-        double curveStart = horse instanceof Donkey ? 0.60D : horse instanceof Mule ? 0.45D : 0.30D;
+        double curveStart = horse instanceof Donkey ? PowersConfig.DONKEY_SPEED_PENALTY_START.get()
+                : horse instanceof Mule ? PowersConfig.MULE_SPEED_PENALTY_START.get()
+                : PowersConfig.HORSE_SPEED_PENALTY_START.get();
         if (!(horse instanceof Donkey) && !(horse instanceof Mule) && rider instanceof ServerPlayer server) {
             curveStart = AnimalWeightApi.horseLightHarnessSpeedStart(curveStart, SkillRanks.horseLightHarness(server));
         }
         if (loadRatio <= curveStart) return 1.0D;
-        double maxPenalty = horse instanceof Mule ? 0.40D : 0.50D;
+        double minimumSpeed = horse instanceof Donkey ? PowersConfig.DONKEY_MIN_SPEED_AT_CAPACITY.get()
+                : horse instanceof Mule ? PowersConfig.MULE_MIN_SPEED_AT_CAPACITY.get()
+                : PowersConfig.HORSE_MIN_SPEED_AT_CAPACITY.get();
+        double maxPenalty = 1.0D - minimumSpeed;
         if (rider instanceof ServerPlayer server) {
             maxPenalty = Math.max(0.0D, maxPenalty - PowersConfig.RIDING_SPEED_PENALTY_REDUCTION_PER_RANK.get()
                     * SkillRanks.ridingSpeedPenalty(server));
@@ -92,15 +97,10 @@ public final class WeightSkillPowers {
         return horse instanceof Donkey || horse instanceof Mule;
     }
 
-    private static double pullMultiplier(AbstractHorse horse) {
-        if (horse instanceof Donkey) return PowersConfig.DONKEY_BASE_PULL_MULTIPLIER.get();
-        if (horse instanceof Mule) return PowersConfig.MULE_BASE_PULL_MULTIPLIER.get();
-        return 1.0D;
-    }
-
     private static double backMultiplier(AbstractHorse horse) {
+        if (!(horse instanceof Donkey) && !(horse instanceof Mule)) return PowersConfig.HORSE_BACK_CAPACITY_MULTIPLIER.get();
         if (horse instanceof Donkey) return PowersConfig.DONKEY_BACK_CAPACITY_MULTIPLIER.get();
         if (horse instanceof Mule) return PowersConfig.MULE_BACK_CAPACITY_MULTIPLIER.get();
-        return 1.0D;
+        return PowersConfig.HORSE_BACK_CAPACITY_MULTIPLIER.get();
     }
 }

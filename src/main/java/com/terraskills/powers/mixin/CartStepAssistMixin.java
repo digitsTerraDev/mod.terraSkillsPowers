@@ -1,6 +1,7 @@
 package com.terraskills.powers.mixin;
 
 import com.terraskills.powers.horse.HorseLoadState;
+import com.terraskills.powers.config.PowersConfig;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import com.jusipat.astikorcartsredux.entity.AbstractDrawnEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,7 +18,7 @@ abstract class CartStepAssistMixin {
         if ((Object) this instanceof TFCAbstractDrawnEntity cart
                 && cart.getPulling() instanceof AbstractHorse horse
                 && HorseLoadState.hasNoStepAssist(horse.getUUID())) {
-            callback.setReturnValue(0.6F);
+            callback.setReturnValue(PowersConfig.REDUCED_STEP_HEIGHT.get().floatValue());
         }
     }
 }

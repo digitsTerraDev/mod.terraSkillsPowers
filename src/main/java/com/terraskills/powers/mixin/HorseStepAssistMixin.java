@@ -1,6 +1,7 @@
 package com.terraskills.powers.mixin;
 
 import com.terraskills.powers.horse.HorseLoadState;
+import com.terraskills.powers.config.PowersConfig;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,7 +16,7 @@ abstract class HorseStepAssistMixin {
     private void terraskillsPowers$removeStepAssist(CallbackInfoReturnable<Float> callback) {
         if ((Object) this instanceof AbstractHorse horse && HorseLoadState.hasNoStepAssist(horse.getUUID())) {
             // Vanilla-sized stepping still handles slabs, but no longer clears a full block.
-            callback.setReturnValue(0.6F);
+            callback.setReturnValue(PowersConfig.REDUCED_STEP_HEIGHT.get().floatValue());
         }
     }
 }

@@ -17,10 +17,30 @@ public final class PowersConfig {
     public static final ModConfigSpec.DoubleValue RIDING_PULL_PERCENT_PER_RANK;
     public static final ModConfigSpec.DoubleValue RIDING_PULL_FLAT_KG_PER_RANK;
     public static final ModConfigSpec.DoubleValue RIDING_SPEED_PENALTY_REDUCTION_PER_RANK;
-    public static final ModConfigSpec.DoubleValue DONKEY_BASE_PULL_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue HORSE_MIN_PULL_CAPACITY_KG;
+    public static final ModConfigSpec.DoubleValue HORSE_MAX_PULL_CAPACITY_KG;
+    public static final ModConfigSpec.DoubleValue DONKEY_MIN_PULL_CAPACITY_KG;
+    public static final ModConfigSpec.DoubleValue DONKEY_MAX_PULL_CAPACITY_KG;
+    public static final ModConfigSpec.DoubleValue MULE_MIN_PULL_CAPACITY_KG;
+    public static final ModConfigSpec.DoubleValue MULE_MAX_PULL_CAPACITY_KG;
+    public static final ModConfigSpec.DoubleValue HORSE_BACK_CAPACITY_MULTIPLIER;
     public static final ModConfigSpec.DoubleValue DONKEY_BACK_CAPACITY_MULTIPLIER;
-    public static final ModConfigSpec.DoubleValue MULE_BASE_PULL_MULTIPLIER;
     public static final ModConfigSpec.DoubleValue MULE_BACK_CAPACITY_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue HORSE_SPEED_PENALTY_START;
+    public static final ModConfigSpec.DoubleValue DONKEY_SPEED_PENALTY_START;
+    public static final ModConfigSpec.DoubleValue MULE_SPEED_PENALTY_START;
+    public static final ModConfigSpec.DoubleValue HORSE_MIN_SPEED_AT_CAPACITY;
+    public static final ModConfigSpec.DoubleValue DONKEY_MIN_SPEED_AT_CAPACITY;
+    public static final ModConfigSpec.DoubleValue MULE_MIN_SPEED_AT_CAPACITY;
+    public static final ModConfigSpec.DoubleValue HORSE_JUMP_LOAD_LIMIT;
+    public static final ModConfigSpec.DoubleValue DONKEY_JUMP_LOAD_LIMIT;
+    public static final ModConfigSpec.DoubleValue MULE_JUMP_LOAD_LIMIT;
+    public static final ModConfigSpec.DoubleValue HORSE_STEP_LOAD_LIMIT;
+    public static final ModConfigSpec.DoubleValue DONKEY_STEP_LOAD_LIMIT;
+    public static final ModConfigSpec.DoubleValue MULE_STEP_LOAD_LIMIT;
+    public static final ModConfigSpec.DoubleValue PULL_CAPACITY_MIN_JUMP_STRENGTH;
+    public static final ModConfigSpec.DoubleValue PULL_CAPACITY_MAX_JUMP_STRENGTH;
+    public static final ModConfigSpec.DoubleValue REDUCED_STEP_HEIGHT;
     public static final ModConfigSpec.DoubleValue HORSE_LIGHT_HARNESS_SPEED_START_PER_RANK;
     public static final ModConfigSpec.DoubleValue HORSE_LIGHT_HARNESS_JUMP_LIMIT_PER_RANK;
     public static final ModConfigSpec.DoubleValue HORSE_LIGHT_HARNESS_STEP_LIMIT_PER_RANK;
@@ -80,14 +100,34 @@ public final class PowersConfig {
                 .defineInRange("ridingPullFlatKgPerRank", 0.0D, 0.0D, 10000.0D);
         RIDING_SPEED_PENALTY_REDUCTION_PER_RANK = builder.comment("Riding Speed skill: reduction of the maximum horse speed penalty per rank (0.10 = 10 percentage points).")
                 .defineInRange("ridingSpeedPenaltyReductionPerRank", 0.10D, 0.0D, 1.0D);
-        DONKEY_BASE_PULL_MULTIPLIER = builder.comment("Base pull-capacity multiplier for donkeys; they are the dedicated freight animal.")
-                .defineInRange("donkeyBasePullMultiplier", 1.80D, 0.0D, 10.0D);
+        builder.push("baseMountStats");
+        HORSE_MIN_PULL_CAPACITY_KG = builder.comment("Horse pull capacity at minimum jump strength.").defineInRange("horseMinPullCapacityKg", 500.0D, 0.0D, 100000.0D);
+        HORSE_MAX_PULL_CAPACITY_KG = builder.comment("Horse pull capacity at maximum jump strength.").defineInRange("horseMaxPullCapacityKg", 1000.0D, 0.0D, 100000.0D);
+        DONKEY_MIN_PULL_CAPACITY_KG = builder.comment("Donkey pull capacity at minimum jump strength.").defineInRange("donkeyMinPullCapacityKg", 900.0D, 0.0D, 100000.0D);
+        DONKEY_MAX_PULL_CAPACITY_KG = builder.comment("Donkey pull capacity at maximum jump strength.").defineInRange("donkeyMaxPullCapacityKg", 1800.0D, 0.0D, 100000.0D);
+        MULE_MIN_PULL_CAPACITY_KG = builder.comment("Mule pull capacity at minimum jump strength.").defineInRange("muleMinPullCapacityKg", 725.0D, 0.0D, 100000.0D);
+        MULE_MAX_PULL_CAPACITY_KG = builder.comment("Mule pull capacity at maximum jump strength.").defineInRange("muleMaxPullCapacityKg", 1450.0D, 0.0D, 100000.0D);
+        HORSE_BACK_CAPACITY_MULTIPLIER = builder.comment("Horse rider/back capacity multiplier.").defineInRange("horseBackCapacityMultiplier", 1.0D, 0.0D, 10.0D);
         DONKEY_BACK_CAPACITY_MULTIPLIER = builder.comment("Back-weight capacity multiplier for donkeys.")
                 .defineInRange("donkeyBackCapacityMultiplier", 1.50D, 0.0D, 10.0D);
-        MULE_BASE_PULL_MULTIPLIER = builder.comment("Base pull-capacity multiplier for mules; between a horse and donkey.")
-                .defineInRange("muleBasePullMultiplier", 1.45D, 0.0D, 10.0D);
         MULE_BACK_CAPACITY_MULTIPLIER = builder.comment("Back-weight capacity multiplier for mules; their expedition specialty.")
                 .defineInRange("muleBackCapacityMultiplier", 1.75D, 0.0D, 10.0D);
+        HORSE_SPEED_PENALTY_START = builder.comment("Horse load ratio where speed loss begins.").defineInRange("horseSpeedPenaltyStart", 0.30D, 0.0D, 1.0D);
+        DONKEY_SPEED_PENALTY_START = builder.comment("Donkey load ratio where speed loss begins.").defineInRange("donkeySpeedPenaltyStart", 0.60D, 0.0D, 1.0D);
+        MULE_SPEED_PENALTY_START = builder.comment("Mule load ratio where speed loss begins.").defineInRange("muleSpeedPenaltyStart", 0.45D, 0.0D, 1.0D);
+        HORSE_MIN_SPEED_AT_CAPACITY = builder.comment("Horse speed multiplier at full pull capacity.").defineInRange("horseMinSpeedAtCapacity", 0.50D, 0.0D, 1.0D);
+        DONKEY_MIN_SPEED_AT_CAPACITY = builder.comment("Donkey speed multiplier at full pull capacity.").defineInRange("donkeyMinSpeedAtCapacity", 0.50D, 0.0D, 1.0D);
+        MULE_MIN_SPEED_AT_CAPACITY = builder.comment("Mule speed multiplier at full pull capacity.").defineInRange("muleMinSpeedAtCapacity", 0.60D, 0.0D, 1.0D);
+        HORSE_JUMP_LOAD_LIMIT = builder.comment("Horse load ratio where jumping is blocked.").defineInRange("horseJumpLoadLimit", 0.45D, 0.0D, 10.0D);
+        DONKEY_JUMP_LOAD_LIMIT = builder.comment("Donkey load ratio where jumping is blocked.").defineInRange("donkeyJumpLoadLimit", 0.25D, 0.0D, 10.0D);
+        MULE_JUMP_LOAD_LIMIT = builder.comment("Mule load ratio where jumping is blocked.").defineInRange("muleJumpLoadLimit", 0.35D, 0.0D, 10.0D);
+        HORSE_STEP_LOAD_LIMIT = builder.comment("Horse load ratio where step height is reduced.").defineInRange("horseStepLoadLimit", 0.75D, 0.0D, 10.0D);
+        DONKEY_STEP_LOAD_LIMIT = builder.comment("Donkey load ratio where step height is reduced.").defineInRange("donkeyStepLoadLimit", 0.55D, 0.0D, 10.0D);
+        MULE_STEP_LOAD_LIMIT = builder.comment("Mule load ratio where step height is reduced.").defineInRange("muleStepLoadLimit", 0.65D, 0.0D, 10.0D);
+        PULL_CAPACITY_MIN_JUMP_STRENGTH = builder.comment("Jump strength mapped to each animal's minimum pull capacity.").defineInRange("pullCapacityMinJumpStrength", 0.40D, 0.0D, 10.0D);
+        PULL_CAPACITY_MAX_JUMP_STRENGTH = builder.comment("Jump strength mapped to each animal's maximum pull capacity.").defineInRange("pullCapacityMaxJumpStrength", 1.00D, 0.01D, 10.0D);
+        REDUCED_STEP_HEIGHT = builder.comment("Step height used after an animal reaches its configured step-load threshold.").defineInRange("reducedStepHeight", 0.60D, 0.0D, 5.0D);
+        builder.pop();
         HORSE_LIGHT_HARNESS_SPEED_START_PER_RANK = builder.comment("Light Harness skill: extra horse load percentage per rank before speed loss begins.")
                 .defineInRange("horseLightHarnessSpeedStartPerRank", 0.05D, 0.0D, 1.0D);
         HORSE_LIGHT_HARNESS_JUMP_LIMIT_PER_RANK = builder.comment("Light Harness skill: extra horse load percentage per rank before jumping is blocked.")

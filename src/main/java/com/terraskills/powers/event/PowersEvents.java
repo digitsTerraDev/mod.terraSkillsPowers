@@ -1,6 +1,7 @@
 package com.terraskills.powers.event;
 
 import com.terraskills.powers.TerraSkillsPowers;
+import com.terraskills.powers.config.PowersConfig;
 import com.terraskills.powers.mining.ExcavationReach;
 import com.terraskills.powers.mining.BrutishMining;
 import com.terraskills.powers.mining.MiningDurability;
@@ -54,16 +55,6 @@ public final class PowersEvents {
     private static final double HANDCART_CAPACITY_MULTIPLIER = 5.0D;
     private static final double HANDCART_OVERLOAD_ALLOWANCE = 1.20D;
     private static final double SOFT_CARRY_CAPACITY_MULTIPLIER = 5.0D / 6.0D;
-    private static final double HORSE_MIN_JUMP_STRENGTH = 0.4D;
-    private static final double HORSE_MAX_JUMP_STRENGTH = 1.0D;
-    private static final double HORSE_MIN_CAPACITY_KG = 500.0D;
-    private static final double HORSE_MAX_CAPACITY_KG = 1000.0D;
-    private static final double HORSE_JUMP_LOAD_LIMIT = 0.45D;
-    private static final double HORSE_STEP_ASSIST_LOAD_LIMIT = 0.75D;
-    private static final double DONKEY_JUMP_LOAD_LIMIT = 0.25D;
-    private static final double DONKEY_STEP_ASSIST_LOAD_LIMIT = 0.55D;
-    private static final double MULE_JUMP_LOAD_LIMIT = 0.35D;
-    private static final double MULE_STEP_ASSIST_LOAD_LIMIT = 0.65D;
     private static final Map<UUID, AssessmentCooldown> LAST_ASSESSMENT = new HashMap<>();
     private static final Map<UUID, UUID> PLAYER_RESTRICTED_HORSES = new HashMap<>();
     private static final Map<UUID, UUID> PLAYER_STEP_HEIGHT_HORSES = new HashMap<>();
@@ -351,9 +342,16 @@ public final class PowersEvents {
 
     private static double horseCapacityKg(AbstractHorse horse) {
         double jumpStrength = horse.getAttributeValue(Attributes.JUMP_STRENGTH);
-        double progress = Math.clamp((jumpStrength - HORSE_MIN_JUMP_STRENGTH)
-                / (HORSE_MAX_JUMP_STRENGTH - HORSE_MIN_JUMP_STRENGTH), 0.0D, 1.0D);
-        double baseCapacityKg = HORSE_MIN_CAPACITY_KG + progress * (HORSE_MAX_CAPACITY_KG - HORSE_MIN_CAPACITY_KG);
+        double minJumpStrength = PowersConfig.PULL_CAPACITY_MIN_JUMP_STRENGTH.get();
+        double maxJumpStrength = PowersConfig.PULL_CAPACITY_MAX_JUMP_STRENGTH.get();
+        double progress = Math.clamp((jumpStrength - minJumpStrength) / Math.max(0.0001D, maxJumpStrength - minJumpStrength), 0.0D, 1.0D);
+        double minCapacityKg = horse instanceof net.minecraft.world.entity.animal.horse.Donkey ? PowersConfig.DONKEY_MIN_PULL_CAPACITY_KG.get()
+                : horse instanceof net.minecraft.world.entity.animal.horse.Mule ? PowersConfig.MULE_MIN_PULL_CAPACITY_KG.get()
+                : PowersConfig.HORSE_MIN_PULL_CAPACITY_KG.get();
+        double maxCapacityKg = horse instanceof net.minecraft.world.entity.animal.horse.Donkey ? PowersConfig.DONKEY_MAX_PULL_CAPACITY_KG.get()
+                : horse instanceof net.minecraft.world.entity.animal.horse.Mule ? PowersConfig.MULE_MAX_PULL_CAPACITY_KG.get()
+                : PowersConfig.HORSE_MAX_PULL_CAPACITY_KG.get();
+        double baseCapacityKg = minCapacityKg + progress * (maxCapacityKg - minCapacityKg);
         Player rider = horse.getControllingPassenger() instanceof Player player ? player : null;
         return WeightSkillPowers.horsePullCapacityKg(horse, rider, baseCapacityKg);
     }
@@ -375,15 +373,15 @@ public final class PowersEvents {
     }
 
     private static double baseJumpLoadLimit(AbstractHorse horse) {
-        if (horse instanceof net.minecraft.world.entity.animal.horse.Donkey) return DONKEY_JUMP_LOAD_LIMIT;
-        if (horse instanceof net.minecraft.world.entity.animal.horse.Mule) return MULE_JUMP_LOAD_LIMIT;
-        return HORSE_JUMP_LOAD_LIMIT;
+        if (horse instanceof net.minecraft.world.entity.animal.horse.Donkey) return PowersConfig.DONKEY_JUMP_LOAD_LIMIT.get();
+        if (horse instanceof net.minecraft.world.entity.animal.horse.Mule) return PowersConfig.MULE_JUMP_LOAD_LIMIT.get();
+        return PowersConfig.HORSE_JUMP_LOAD_LIMIT.get();
     }
 
     private static double baseStepLoadLimit(AbstractHorse horse) {
-        if (horse instanceof net.minecraft.world.entity.animal.horse.Donkey) return DONKEY_STEP_ASSIST_LOAD_LIMIT;
-        if (horse instanceof net.minecraft.world.entity.animal.horse.Mule) return MULE_STEP_ASSIST_LOAD_LIMIT;
-        return HORSE_STEP_ASSIST_LOAD_LIMIT;
+        if (horse instanceof net.minecraft.world.entity.animal.horse.Donkey) return PowersConfig.DONKEY_STEP_LOAD_LIMIT.get();
+        if (horse instanceof net.minecraft.world.entity.animal.horse.Mule) return PowersConfig.MULE_STEP_LOAD_LIMIT.get();
+        return PowersConfig.HORSE_STEP_LOAD_LIMIT.get();
     }
 
     private record AssessmentCooldown(ResourceKey<net.minecraft.world.level.Level> dimension, long gameTime) {}
