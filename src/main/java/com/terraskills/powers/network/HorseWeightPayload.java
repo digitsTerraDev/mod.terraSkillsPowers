@@ -11,7 +11,7 @@ import java.util.UUID;
 /** Server-authoritative horse-cart load and capacity for the horse HUD. */
 public record HorseWeightPayload(boolean riding, UUID horseId, double loadWeightKg, double capacityKg,
                                  double backWeightKg, double backCapacityKg, boolean jumpBlocked,
-                                 boolean noStepAssist, boolean movementBlocked) implements CustomPacketPayload {
+                                 boolean noStepAssist, boolean movementBlocked, double speedMultiplier) implements CustomPacketPayload {
     public static final Type<HorseWeightPayload> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(TerraSkillsPowers.MOD_ID, "horse_weight"));
     public static final StreamCodec<RegistryFriendlyByteBuf, HorseWeightPayload> STREAM_CODEC = StreamCodec.of(
@@ -25,9 +25,10 @@ public record HorseWeightPayload(boolean riding, UUID horseId, double loadWeight
                 buffer.writeBoolean(payload.jumpBlocked);
                 buffer.writeBoolean(payload.noStepAssist);
                 buffer.writeBoolean(payload.movementBlocked);
+                buffer.writeDouble(payload.speedMultiplier);
             },
             buffer -> new HorseWeightPayload(buffer.readBoolean(), buffer.readUUID(), buffer.readDouble(), buffer.readDouble(),
-                    buffer.readDouble(), buffer.readDouble(), buffer.readBoolean(), buffer.readBoolean(), buffer.readBoolean()));
+                    buffer.readDouble(), buffer.readDouble(), buffer.readBoolean(), buffer.readBoolean(), buffer.readBoolean(), buffer.readDouble()));
 
     @Override
     public Type<? extends CustomPacketPayload> type() {

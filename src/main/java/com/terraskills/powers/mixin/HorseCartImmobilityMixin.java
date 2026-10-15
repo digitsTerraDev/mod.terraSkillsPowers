@@ -22,6 +22,9 @@ abstract class HorseCartImmobilityMixin {
             ((AbstractHorse) (Object) this).setDeltaMovement(Vec3.ZERO);
             return Vec3.ZERO;
         }
+        if ((Object) this instanceof AbstractHorse horse) {
+            return movement.scale(HorseLoadState.speedMultiplier(horse.getUUID()));
+        }
         return movement;
     }
 

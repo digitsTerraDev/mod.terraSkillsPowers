@@ -11,7 +11,8 @@
     "HorseStepAssistMixin",
     "HorseJumpMixin",
     "HorseCartImmobilityMixin",
-    "CartStepAssistMixin"
+    "CartStepAssistMixin",
+    "UltimateWeightCapacityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -15,7 +15,8 @@ public final class ClientHorseWeight {
     public static void accept(HorseWeightPayload payload) {
         if (currentHorseId != null && !currentHorseId.equals(payload.horseId())) HorseLoadState.clear(currentHorseId);
         currentHorseId = payload.riding() ? payload.horseId() : null;
-        if (payload.riding()) HorseLoadState.set(payload.horseId(), payload.jumpBlocked(), payload.noStepAssist(), payload.movementBlocked());
+        if (payload.riding()) HorseLoadState.set(payload.horseId(), payload.jumpBlocked(), payload.noStepAssist(),
+                payload.movementBlocked(), payload.speedMultiplier());
         current = payload.riding() ? new Snapshot(payload.loadWeightKg(), payload.capacityKg(),
                 payload.backWeightKg(), payload.backCapacityKg()) : null;
     }

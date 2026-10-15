@@ -9,6 +9,8 @@ import com.terraskills.powers.network.SkillRanksPayload;
 import com.terraskills.powers.network.HandcartWeightPayload;
 import com.terraskills.powers.network.HorseWeightPayload;
 import com.terraskills.powers.horse.HorseLoadState;
+import com.terraskills.powers.weight.WeightSkillPowers;
+import com.terraskills.powers.weight.MountAttributePowers;
 import com.terraskills.powers.skill.SkillRanks;
 import com.warfactory.ultimateweight.UltimateWeightCommon;
 import com.warfactory.ultimateweight.v1211.WeightViews1211;
@@ -25,6 +27,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -53,10 +56,14 @@ public final class PowersEvents {
     private static final double SOFT_CARRY_CAPACITY_MULTIPLIER = 5.0D / 6.0D;
     private static final double HORSE_MIN_JUMP_STRENGTH = 0.4D;
     private static final double HORSE_MAX_JUMP_STRENGTH = 1.0D;
-    private static final double HORSE_MIN_CAPACITY_KG = 750.0D;
-    private static final double HORSE_MAX_CAPACITY_KG = 1500.0D;
-    private static final double HORSE_JUMP_LOAD_LIMIT = 0.30D;
-    private static final double HORSE_STEP_ASSIST_LOAD_LIMIT = 0.60D;
+    private static final double HORSE_MIN_CAPACITY_KG = 500.0D;
+    private static final double HORSE_MAX_CAPACITY_KG = 1000.0D;
+    private static final double HORSE_JUMP_LOAD_LIMIT = 0.45D;
+    private static final double HORSE_STEP_ASSIST_LOAD_LIMIT = 0.75D;
+    private static final double DONKEY_JUMP_LOAD_LIMIT = 0.25D;
+    private static final double DONKEY_STEP_ASSIST_LOAD_LIMIT = 0.55D;
+    private static final double MULE_JUMP_LOAD_LIMIT = 0.35D;
+    private static final double MULE_STEP_ASSIST_LOAD_LIMIT = 0.65D;
     private static final Map<UUID, AssessmentCooldown> LAST_ASSESSMENT = new HashMap<>();
     private static final Map<UUID, UUID> PLAYER_RESTRICTED_HORSES = new HashMap<>();
     private static final Map<UUID, UUID> PLAYER_STEP_HEIGHT_HORSES = new HashMap<>();
@@ -97,7 +104,7 @@ public final class PowersEvents {
         if (event.getEntity() instanceof AbstractHorse horse
                 && horse.getControllingPassenger() instanceof ServerPlayer player
                 && findHorseCart(player, horse) instanceof TFCAbstractDrawnEntity cart
-                && horseLoadKg(horse, cart) > horseCapacityKg(horse) * HORSE_JUMP_LOAD_LIMIT) {
+                && horseLoadKg(horse, cart) > horseCapacityKg(horse) * horseJumpLoadLimit(horse)) {
             horse.setDeltaMovement(horse.getDeltaMovement().x, 0.0D, horse.getDeltaMovement().z);
             horse.hurtMarked = true;
             return;
@@ -149,6 +156,7 @@ public final class PowersEvents {
         if (event.getEntity() instanceof ServerPlayer player) {
             // Tool swaps are observed within one tick; rank changes are checked alongside the existing one-second sync.
             ExcavationReach.reconcile(player, player.tickCount % 20 == 0);
+            MountAttributePowers.reconcile(player);
             updateHorseStepAssist(player);
             if (player.tickCount % 20 == 0) syncRanks(player);
             if (player.tickCount % 5 == 0) {
@@ -174,6 +182,7 @@ public final class PowersEvents {
             if (event.getOriginal() instanceof ServerPlayer original) ExcavationReach.clear(original);
             BrutishMining.clear(player.getUUID());
             MiningDurability.clear(player.getUUID());
+            MountAttributePowers.clear(player);
         }
     }
 
@@ -183,6 +192,7 @@ public final class PowersEvents {
         ExcavationReach.forget(event.getEntity().getUUID());
         BrutishMining.clear(event.getEntity().getUUID());
         MiningDurability.clear(event.getEntity().getUUID());
+        if (event.getEntity() instanceof ServerPlayer player) MountAttributePowers.clear(player);
         restoreHorseStepAssist(event.getEntity().getUUID());
     }
 
@@ -192,6 +202,7 @@ public final class PowersEvents {
         ExcavationReach.clearAll();
         BrutishMining.clearAll();
         MiningDurability.clearAll();
+        MountAttributePowers.clearAll();
         PLAYER_RESTRICTED_HORSES.values().forEach(HorseLoadState::clear);
         PLAYER_RESTRICTED_HORSES.clear();
         PLAYER_STEP_HEIGHT_HORSES.clear();
@@ -246,11 +257,14 @@ public final class PowersEvents {
         double loadKg = horseLoadKg(context.horse(), context.cart());
         double capacityKg = horseCapacityKg(context.horse());
         HorseBackLoad backLoad = horseBackLoad(context.horse());
+        double jumpLimit = horseJumpLoadLimit(context.horse());
+        double stepLimit = horseStepLoadLimit(context.horse());
         PacketDistributor.sendToPlayer(player, new HorseWeightPayload(true, context.horse().getUUID(), loadKg, capacityKg,
                 backLoad.weightKg(), backLoad.capacityKg(),
-                loadKg > capacityKg * HORSE_JUMP_LOAD_LIMIT || backLoad.weightKg() > backLoad.capacityKg() * HORSE_JUMP_LOAD_LIMIT,
-                loadKg > capacityKg * HORSE_STEP_ASSIST_LOAD_LIMIT || backLoad.weightKg() > backLoad.capacityKg() * HORSE_STEP_ASSIST_LOAD_LIMIT,
-                backLoad.weightKg() > backLoad.capacityKg()));
+                loadKg > capacityKg * jumpLimit || backLoad.weightKg() > backLoad.capacityKg() * jumpLimit,
+                loadKg > capacityKg * stepLimit || backLoad.weightKg() > backLoad.capacityKg() * stepLimit,
+                loadKg > capacityKg || backLoad.weightKg() > backLoad.capacityKg(),
+                horseSpeedMultiplier(context.horse(), loadKg, capacityKg)));
     }
 
     private static TFCAbstractDrawnEntity findHorseCart(ServerPlayer player, AbstractHorse horse) {
@@ -277,11 +291,14 @@ public final class PowersEvents {
     }
 
     private static double horseLoadKg(AbstractHorse horse, TFCAbstractDrawnEntity cart) {
+        Player rider = horse.getControllingPassenger() instanceof Player player ? player : null;
         double total = cart instanceof TFCAbstractDrawnInventoryEntity inventoryCart ? cartWeightKg(inventoryCart) : 0.0D;
-        if (horse.getControllingPassenger() instanceof Player player) total += WeightViews1211.totalWeight(player);
+        if (rider != null) total += WeightSkillPowers.effectiveMuleWeightKg(horse, rider, WeightViews1211.totalWeight(rider));
         if (cart != null) {
             for (Entity passenger : cart.getPassengers()) {
-                if (passenger instanceof Player player) total += WeightViews1211.totalWeight(player);
+                if (passenger instanceof Player player) {
+                    total += WeightSkillPowers.effectiveMuleWeightKg(horse, rider, WeightViews1211.totalWeight(player));
+                }
             }
         }
         return total;
@@ -297,10 +314,13 @@ public final class PowersEvents {
             double loadKg = horseLoadKg(horse, cart);
             double capacityKg = horseCapacityKg(horse);
             HorseBackLoad backLoad = horseBackLoad(horse);
+            double jumpLimit = horseJumpLoadLimit(horse);
+            double stepLimit = horseStepLoadLimit(horse);
             HorseLoadState.set(horseId,
-                    loadKg > capacityKg * HORSE_JUMP_LOAD_LIMIT || backLoad.weightKg() > backLoad.capacityKg() * HORSE_JUMP_LOAD_LIMIT,
-                    loadKg > capacityKg * HORSE_STEP_ASSIST_LOAD_LIMIT || backLoad.weightKg() > backLoad.capacityKg() * HORSE_STEP_ASSIST_LOAD_LIMIT,
-                    backLoad.weightKg() > backLoad.capacityKg());
+                    loadKg > capacityKg * jumpLimit || backLoad.weightKg() > backLoad.capacityKg() * jumpLimit,
+                    loadKg > capacityKg * stepLimit || backLoad.weightKg() > backLoad.capacityKg() * stepLimit,
+                    loadKg > capacityKg || backLoad.weightKg() > backLoad.capacityKg(),
+                    horseSpeedMultiplier(horse, loadKg, capacityKg));
             return;
         }
         UUID horseId = PLAYER_RESTRICTED_HORSES.remove(playerId);
@@ -314,20 +334,56 @@ public final class PowersEvents {
 
     private static HorseWeightPayload emptyHorseWeight() {
         return new HorseWeightPayload(false, new UUID(0L, 0L), 0.0D, 0.0D, 0.0D, 0.0D,
-                false, false, false);
+                false, false, false, 1.0D);
     }
 
     private static HorseBackLoad horseBackLoad(AbstractHorse horse) {
         if (!(horse.getControllingPassenger() instanceof Player rider)) return new HorseBackLoad(0.0D, 0.0D);
-        double capacityKg = UltimateWeightCommon.bootstrap().config().defaultCarryCapacityKg();
-        return new HorseBackLoad(WeightViews1211.totalWeight(rider), capacityKg);
+        double capacityKg = WeightSkillPowers.horseBackCapacityKg(horse, rider,
+                UltimateWeightCommon.bootstrap().config().defaultCarryCapacityKg());
+        double armorWeightKg = WeightViews1211.weightOf(horse.getItemBySlot(EquipmentSlot.BODY));
+        double totalWeightKg = armorWeightKg;
+        for (Entity passenger : horse.getPassengers()) {
+            if (passenger instanceof Player player) totalWeightKg += WeightViews1211.totalWeight(player);
+        }
+        return new HorseBackLoad(WeightSkillPowers.effectiveMuleWeightKg(horse, rider, totalWeightKg), capacityKg);
     }
 
     private static double horseCapacityKg(AbstractHorse horse) {
         double jumpStrength = horse.getAttributeValue(Attributes.JUMP_STRENGTH);
         double progress = Math.clamp((jumpStrength - HORSE_MIN_JUMP_STRENGTH)
                 / (HORSE_MAX_JUMP_STRENGTH - HORSE_MIN_JUMP_STRENGTH), 0.0D, 1.0D);
-        return HORSE_MIN_CAPACITY_KG + progress * (HORSE_MAX_CAPACITY_KG - HORSE_MIN_CAPACITY_KG);
+        double baseCapacityKg = HORSE_MIN_CAPACITY_KG + progress * (HORSE_MAX_CAPACITY_KG - HORSE_MIN_CAPACITY_KG);
+        Player rider = horse.getControllingPassenger() instanceof Player player ? player : null;
+        return WeightSkillPowers.horsePullCapacityKg(horse, rider, baseCapacityKg);
+    }
+
+    private static double horseJumpLoadLimit(AbstractHorse horse) {
+        Player rider = horse.getControllingPassenger() instanceof Player player ? player : null;
+        return WeightSkillPowers.jumpLoadLimit(horse, rider, baseJumpLoadLimit(horse));
+    }
+
+    private static double horseStepLoadLimit(AbstractHorse horse) {
+        Player rider = horse.getControllingPassenger() instanceof Player player ? player : null;
+        return WeightSkillPowers.stepLoadLimit(horse, rider, baseStepLoadLimit(horse));
+    }
+
+    private static double horseSpeedMultiplier(AbstractHorse horse, double loadKg, double capacityKg) {
+        Player rider = horse.getControllingPassenger() instanceof Player player ? player : null;
+        double loadRatio = capacityKg > 0.0D ? loadKg / capacityKg : Double.POSITIVE_INFINITY;
+        return WeightSkillPowers.speedMultiplier(horse, rider, loadRatio);
+    }
+
+    private static double baseJumpLoadLimit(AbstractHorse horse) {
+        if (horse instanceof net.minecraft.world.entity.animal.horse.Donkey) return DONKEY_JUMP_LOAD_LIMIT;
+        if (horse instanceof net.minecraft.world.entity.animal.horse.Mule) return MULE_JUMP_LOAD_LIMIT;
+        return HORSE_JUMP_LOAD_LIMIT;
+    }
+
+    private static double baseStepLoadLimit(AbstractHorse horse) {
+        if (horse instanceof net.minecraft.world.entity.animal.horse.Donkey) return DONKEY_STEP_ASSIST_LOAD_LIMIT;
+        if (horse instanceof net.minecraft.world.entity.animal.horse.Mule) return MULE_STEP_ASSIST_LOAD_LIMIT;
+        return HORSE_STEP_ASSIST_LOAD_LIMIT;
     }
 
     private record AssessmentCooldown(ResourceKey<net.minecraft.world.level.Level> dimension, long gameTime) {}

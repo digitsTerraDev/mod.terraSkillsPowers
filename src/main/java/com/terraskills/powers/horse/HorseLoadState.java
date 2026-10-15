@@ -10,8 +10,9 @@ public final class HorseLoadState {
 
     private HorseLoadState() {}
 
-    public static void set(UUID horseId, boolean jumpBlocked, boolean noStepAssist, boolean movementBlocked) {
-        RESTRICTIONS.put(horseId, new Restrictions(jumpBlocked, noStepAssist, movementBlocked));
+    public static void set(UUID horseId, boolean jumpBlocked, boolean noStepAssist, boolean movementBlocked,
+                           double speedMultiplier) {
+        RESTRICTIONS.put(horseId, new Restrictions(jumpBlocked, noStepAssist, movementBlocked, speedMultiplier));
     }
 
     public static void clear(UUID horseId) {
@@ -30,7 +31,11 @@ public final class HorseLoadState {
         return RESTRICTIONS.getOrDefault(horseId, Restrictions.NONE).movementBlocked();
     }
 
-    private record Restrictions(boolean jumpBlocked, boolean noStepAssist, boolean movementBlocked) {
-        private static final Restrictions NONE = new Restrictions(false, false, false);
+    public static double speedMultiplier(UUID horseId) {
+        return RESTRICTIONS.getOrDefault(horseId, Restrictions.NONE).speedMultiplier();
+    }
+
+    private record Restrictions(boolean jumpBlocked, boolean noStepAssist, boolean movementBlocked, double speedMultiplier) {
+        private static final Restrictions NONE = new Restrictions(false, false, false, 1.0D);
     }
 }

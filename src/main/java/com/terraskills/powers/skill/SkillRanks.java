@@ -47,4 +47,70 @@ public final class SkillRanks {
         // mine_safety is the intentionally preserved legacy ID.
         return rank(player, "heights_training", "mine_safety");
     }
+
+    public static int carryCapacityPercent(ServerPlayer player) {
+        return rank(player, "carry_capacity_percent", "weight_capacity_percent");
+    }
+
+    public static int carryCapacityFlat(ServerPlayer player) {
+        return rank(player, "carry_capacity_flat", "weight_capacity_flat");
+    }
+
+    public static int ridingPullPercent(ServerPlayer player) {
+        return rank(player, "riding_pull_percent", "horse_pull_percent");
+    }
+
+    public static int ridingPullFlat(ServerPlayer player) {
+        return rank(player, "riding_pull_flat", "horse_pull_flat");
+    }
+
+    public static int ridingSpeedPenalty(ServerPlayer player) {
+        return rank(player, "riding_speed_penalty", "horse_speed_penalty");
+    }
+
+    public static int packAnimalPullPercent(ServerPlayer player) {
+        return rank(player, "pack_animal_pull_percent", "donkey_pull_percent");
+    }
+
+    public static int packAnimalPullFlat(ServerPlayer player) {
+        return rank(player, "pack_animal_pull_flat", "donkey_pull_flat");
+    }
+
+    public static int packAnimalBackPercent(ServerPlayer player) {
+        return rank(player, "pack_animal_back_percent", "donkey_back_percent");
+    }
+
+    public static int packAnimalBackFlat(ServerPlayer player) {
+        return rank(player, "pack_animal_back_flat", "donkey_back_flat");
+    }
+
+    public static int packAnimalJumpLimit(ServerPlayer player) {
+        return rank(player, "pack_animal_jump_limit", "donkey_jump_limit");
+    }
+
+    public static int packAnimalStepLimit(ServerPlayer player) {
+        return rank(player, "pack_animal_step_limit", "donkey_step_limit");
+    }
+
+    public static int horseLightHarness(ServerPlayer player) {
+        return rank(player, "horse_light_harness", "light_harness");
+    }
+
+    public static int donkeyDraftHarness(ServerPlayer player) {
+        return rank(player, "donkey_draft_harness", "draft_harness");
+    }
+
+    public static int muleExpeditionBalance(ServerPlayer player) {
+        return rank(player, "mule_expedition_balance", "expedition_balance");
+    }
+
+    public static int mountSpeed(ServerPlayer player) { return rank(player, "mount_speed"); }
+    public static int horseSpeed(ServerPlayer player) { return rank(player, "horse_speed"); }
+    public static int muleSpeed(ServerPlayer player) { return rank(player, "mule_speed"); }
+    public static int mountArmor(ServerPlayer player) { return rank(player, "mount_armor"); }
+    public static int horseArmor(ServerPlayer player) { return rank(player, "horse_armor"); }
+    public static int muleArmor(ServerPlayer player) { return rank(player, "mule_armor"); }
+    public static int mountToughness(ServerPlayer player) { return rank(player, "mount_toughness"); }
+    public static int horseToughness(ServerPlayer player) { return rank(player, "horse_toughness"); }
+    public static int muleToughness(ServerPlayer player) { return rank(player, "mule_toughness"); }
 }
