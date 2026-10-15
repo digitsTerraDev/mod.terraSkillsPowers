@@ -1,7 +1,6 @@
 package com.terraskills.powers.skill;
 
 import com.terraskills.powers.client.ClientSkillRanks;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.puffish.skillsmod.api.Skill;
@@ -9,12 +8,10 @@ import net.puffish.skillsmod.api.SkillsAPI;
 
 /** Reads unlocked Pufferfish nodes. No rank is cached on the server, so refunds and resets apply immediately. */
 public final class SkillRanks {
-    public static final ResourceLocation MINER = ResourceLocation.fromNamespaceAndPath("terraskills", "miner");
-
     private SkillRanks() {}
 
     public static int rank(ServerPlayer player, String... prefixes) {
-        return SkillsAPI.getCategory(MINER).map(category -> {
+        return SkillsAPI.streamCategories().mapToInt(category -> {
             for (String prefix : prefixes) {
                 for (int rank = 5; rank >= 1; rank--) {
                     if (category.getSkill(prefix + "_" + rank)
@@ -24,7 +21,7 @@ public final class SkillRanks {
                 }
             }
             return 0;
-        }).orElse(0);
+        }).max().orElse(0);
     }
 
     public static int mining(Player player) {
