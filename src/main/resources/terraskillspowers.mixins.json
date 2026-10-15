@@ -7,7 +7,11 @@
     "ForgeEventHandlerMixin",
     "CollapseRecipeMixin",
     "ToolItemMixin",
-    "TFCHandCartWeightMixin"
+    "TFCHandCartWeightMixin",
+    "HorseStepAssistMixin",
+    "HorseJumpMixin",
+    "HorseCartImmobilityMixin",
+    "CartStepAssistMixin"
   ],
   "injectors": {
     "defaultRequire": 1

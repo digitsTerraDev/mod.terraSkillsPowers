@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.terraskills.powers.TerraSkillsPowers;
 import com.terraskills.powers.network.ToggleBrutishPayload;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -22,11 +21,6 @@ public final class BrutishMiningClient {
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
-        if (Minecraft.getInstance().player == null) {
-            ClientSkillRanks.clear();
-            ClientHandcartWeight.clear();
-            return;
-        }
         while (TOGGLE.consumeClick()) PacketDistributor.sendToServer(ToggleBrutishPayload.INSTANCE);
     }
 
