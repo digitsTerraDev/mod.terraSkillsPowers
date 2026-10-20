@@ -12,7 +12,16 @@
     "HorseJumpMixin",
     "HorseCartImmobilityMixin",
     "CartStepAssistMixin",
-    "UltimateWeightCapacityMixin"
+    "UltimateWeightCapacityMixin",
+    "ScramblingMixin",
+    "MovementExhaustionMixin",
+    "TFCPlayerInfoTravelThirstMixin",
+    "TFCScareSensorMixin",
+    "TFCPlayerSensorMixin",
+    "ExpeditionPackingPlayerViewMixin",
+    "ExpeditionPackingWeightMixin",
+    "ExpeditionPackingUltimateWeightMixin",
+    "ThermiaTemperatureMixin"
   ],
   "injectors": {
     "defaultRequire": 1

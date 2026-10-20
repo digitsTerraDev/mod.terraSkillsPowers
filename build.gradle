@@ -117,6 +117,12 @@ neoForge {
 // "optional", meaning it will not be pulled by dependents of this mod.
 configurations {
     runtimeClasspath.extendsFrom localRuntime
+    // JourneyMap is copied into run/mods for client testing so both Gradle and IntelliJ launches discover it as a mod.
+    journeyMapDevRuntime {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
 }
 
 dependencies {
@@ -126,6 +132,9 @@ dependencies {
     compileOnly "curse.maven:astikor-carts-redux-916493:6967087"
     compileOnly "curse.maven:astikor-carts-tfc-844019:8054123"
     compileOnly "maven.modrinth:RWQYcqFx:Dr2VvSV3"
+    compileOnly "maven.modrinth:5zN7dZdO:${thermia_version}"
+    // JourneyMap discovers the client plugin at runtime. Keep its API compile-only so it remains optional in releases.
+    compileOnly "info.journeymap:journeymap-api-neoforge:${journeymap_api_version}"
     localRuntime "vazkii.patchouli:Patchouli:${patchouli_version}"
     // Development-client test set for the optional handcart integration.
     localRuntime "curse.maven:astikor-carts-redux-916493:6967087"
@@ -133,6 +142,10 @@ dependencies {
     localRuntime "curse.maven:tfc-registry-api-1396119:7322201"
     localRuntime "curse.maven:astikor-carts-tfc-844019:8054123"
     localRuntime "maven.modrinth:RWQYcqFx:Dr2VvSV3"
+    localRuntime "maven.modrinth:5zN7dZdO:${thermia_version}"
+    localRuntime "maven.modrinth:curios:${curios_version}"
+    // Latest 1.21.1 NeoForge JourneyMap release, copied into run/mods only for local client testing.
+    journeyMapDevRuntime "maven.modrinth:lfHFW1mp:${journeymap_runtime_version}"
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
@@ -156,6 +169,21 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 }
 
+// ModDev's classpath launch did not present JourneyMap to NeoForge's mod discovery. Keep a single, ignored dev copy
+// in run/mods instead; this also makes direct IntelliJ client launches behave exactly like gradlew runClient.
+def journeyMapDevJar = configurations.journeyMapDevRuntime
+var syncJourneyMapDevMod = tasks.register("syncJourneyMapDevMod", Copy) {
+    group = "run"
+    description = "Copies JourneyMap into run/mods for local client heatmap testing."
+    from(journeyMapDevJar)
+    include("*.jar")
+    into(layout.projectDirectory.dir("run/mods"))
+    rename { "journeymap-dev.jar" }
+}
+tasks.named("runClient").configure {
+    dependsOn(syncJourneyMapDevMod)
+}
+
 // This block of code expands all declared replace properties in the specified resource targets.
 // A missing property will result in an error. Properties are expanded using ${} Groovy notation.
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
@@ -170,6 +198,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_version            : mod_version,
             tfc_version            : tfc_version,
             puffish_skills_version : puffish_skills_version,
+            journeymap_version_range: journeymap_version_range,
     ]
     inputs.properties replaceProperties
     expand replaceProperties

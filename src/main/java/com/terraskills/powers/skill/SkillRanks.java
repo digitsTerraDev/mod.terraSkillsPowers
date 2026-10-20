@@ -113,4 +113,29 @@ public final class SkillRanks {
     public static int mountToughness(ServerPlayer player) { return rank(player, "mount_toughness"); }
     public static int horseToughness(ServerPlayer player) { return rank(player, "horse_toughness"); }
     public static int muleToughness(ServerPlayer player) { return rank(player, "mule_toughness"); }
+
+    public static int trailblazing(Player player) {
+        return player instanceof ServerPlayer server ? rank(server, "trailblazing") : ClientSkillRanks.trailblazing();
+    }
+
+    public static int wellTrodden(Player player) {
+        return player instanceof ServerPlayer server ? rank(server, "well_trodden") : ClientSkillRanks.wellTrodden();
+    }
+
+    public static int scrambling(Player player) {
+        return player instanceof ServerPlayer server ? rank(server, "scrambling") : ClientSkillRanks.scrambling();
+    }
+
+    public static int endurance(ServerPlayer player) { return rank(player, "endurance"); }
+
+    /** TFC 4.2.10 charges no ordinary walking exhaustion, so this intentionally has no active hook. */
+    public static int measuredPace(ServerPlayer player) { return rank(player, "measured_pace"); }
+
+    public static int waterConservation(ServerPlayer player) { return rank(player, "water_conservation"); }
+    public static int acclimatization(ServerPlayer player) { return rank(player, "acclimatization"); }
+    public static int quietPassage(ServerPlayer player) { return rank(player, "quiet_passage"); }
+
+    public static int expeditionPacking(Player player) {
+        return player instanceof ServerPlayer server ? rank(server, "expedition_packing") : ClientSkillRanks.expeditionPacking();
+    }
 }

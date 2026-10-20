@@ -18,5 +18,6 @@ public final class ClientStateCleanup {
         ClientSkillRanks.clear();
         ClientHandcartWeight.clear();
         ClientHorseWeight.clear();
+        ClientActivityHeatmap.clear();
     }
 }

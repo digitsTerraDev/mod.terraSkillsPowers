@@ -13,12 +13,18 @@ import com.terraskills.powers.horse.HorseLoadState;
 import com.terraskills.powers.weight.WeightSkillPowers;
 import com.terraskills.powers.weight.MountAttributePowers;
 import com.terraskills.powers.skill.SkillRanks;
+import com.terraskills.powers.exploration.TrailActivityPowers;
+import com.terraskills.powers.exploration.TravelThirstLedger;
+import com.terraskills.powers.exploration.ActivityHeatmapService;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.warfactory.ultimateweight.UltimateWeightCommon;
 import com.warfactory.ultimateweight.v1211.WeightViews1211;
 import net.dries007.tfc.common.TFCTags;
 import net.dries007.tfc.util.data.Support;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,6 +44,7 @@ import net.neoforged.neoforge.event.entity.living.LivingEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import tfcastikorcarts.common.entities.carts.TFCHandCartEntity;
 import tfcastikorcarts.common.entities.carts.TFCAbstractDrawnInventoryEntity;
@@ -59,6 +66,18 @@ public final class PowersEvents {
     private static final Map<UUID, UUID> PLAYER_RESTRICTED_HORSES = new HashMap<>();
     private static final Map<UUID, UUID> PLAYER_STEP_HEIGHT_HORSES = new HashMap<>();
     private PowersEvents() {}
+
+    @SubscribeEvent
+    public static void registerCommands(RegisterCommandsEvent event) {
+        event.getDispatcher().register(Commands.literal("terraskillspowers")
+                .requires(source -> source.hasPermission(2))
+                .then(Commands.literal("debug")
+                        .then(Commands.literal("activity_heatmap")
+                                .then(Commands.literal("enable")
+                                        .executes(context -> setActivityHeatmapEnabled(context.getSource(), true)))
+                                .then(Commands.literal("disable")
+                                        .executes(context -> setActivityHeatmapEnabled(context.getSource(), false))))));
+    }
 
     @SubscribeEvent
     public static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
@@ -148,6 +167,7 @@ public final class PowersEvents {
             // Tool swaps are observed within one tick; rank changes are checked alongside the existing one-second sync.
             ExcavationReach.reconcile(player, player.tickCount % 20 == 0);
             MountAttributePowers.reconcile(player);
+            TrailActivityPowers.tick(player);
             updateHorseStepAssist(player);
             if (player.tickCount % 20 == 0) syncRanks(player);
             if (player.tickCount % 5 == 0) {
@@ -162,6 +182,9 @@ public final class PowersEvents {
         if (event.getEntity() instanceof ServerPlayer player) {
             ExcavationReach.clear(player);
             ExcavationReach.reconcile(player, true);
+            TrailActivityPowers.clear(player);
+            TrailActivityPowers.reconcile(player);
+            ActivityHeatmapService.setEnabled(player, false);
             syncRanks(player);
         }
     }
@@ -174,6 +197,8 @@ public final class PowersEvents {
             BrutishMining.clear(player.getUUID());
             MiningDurability.clear(player.getUUID());
             MountAttributePowers.clear(player);
+            TrailActivityPowers.clear(player);
+            TravelThirstLedger.clear(player.getUUID());
         }
     }
 
@@ -183,6 +208,9 @@ public final class PowersEvents {
         ExcavationReach.forget(event.getEntity().getUUID());
         BrutishMining.clear(event.getEntity().getUUID());
         MiningDurability.clear(event.getEntity().getUUID());
+        TrailActivityPowers.forget(event.getEntity().getUUID());
+        ActivityHeatmapService.forget(event.getEntity().getUUID());
+        TravelThirstLedger.clear(event.getEntity().getUUID());
         if (event.getEntity() instanceof ServerPlayer player) MountAttributePowers.clear(player);
         restoreHorseStepAssist(event.getEntity().getUUID());
     }
@@ -194,6 +222,9 @@ public final class PowersEvents {
         BrutishMining.clearAll();
         MiningDurability.clearAll();
         MountAttributePowers.clearAll();
+        TrailActivityPowers.clearAll();
+        ActivityHeatmapService.clearAll();
+        TravelThirstLedger.clearAll();
         PLAYER_RESTRICTED_HORSES.values().forEach(HorseLoadState::clear);
         PLAYER_RESTRICTED_HORSES.clear();
         PLAYER_STEP_HEIGHT_HORSES.clear();
@@ -202,7 +233,18 @@ public final class PowersEvents {
     public static void syncRanks(ServerPlayer player) {
         int brutishRank = BrutishMining.rank(player);
         PacketDistributor.sendToPlayer(player, new SkillRanksPayload(SkillRanks.mining(player), SkillRanks.deepMining(player),
-                SkillRanks.stoneMining(player), SkillRanks.excavating(player), brutishRank, BrutishMining.isActive(player)));
+                SkillRanks.stoneMining(player), SkillRanks.excavating(player), brutishRank, BrutishMining.isActive(player),
+                SkillRanks.trailblazing(player), SkillRanks.wellTrodden(player), SkillRanks.scrambling(player),
+                SkillRanks.expeditionPacking(player)));
+    }
+
+    private static int setActivityHeatmapEnabled(CommandSourceStack source, boolean enabled) throws CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
+        ActivityHeatmapService.setEnabled(player, enabled);
+        source.sendSuccess(() -> Component.translatable(enabled
+                ? "command.terraskillspowers.activity_heatmap.enabled"
+                : "command.terraskillspowers.activity_heatmap.disabled"), false);
+        return 1;
     }
 
     private static void syncHandcartWeight(ServerPlayer player) {

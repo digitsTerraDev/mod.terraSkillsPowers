@@ -55,6 +55,15 @@ so resets and refunds take effect without a second progression store.
   limit and 120% of it, then pins the puller and reports that the cart is too
   heavy. The calculation includes Ultimate Weight's equipment capacity bonuses
   and nested-container weights.
+- **Shared trail activity heatmap:** JourneyMap clients render the persisted,
+  dimension-local Trailblazing/Well Trodden activity as the optional
+  `TerraSkills: Shared Activity` overlay. It is debug-only and off by default:
+  an in-game operator enables it only for their own client with
+  `/terraskillspowers debug activity_heatmap enable` and hides it again with
+  `/terraskillspowers debug activity_heatmap disable`. Until enabled, the
+  client sends no heatmap requests and the server sends no activity data. The
+  server clamps the map window radius, rate-limits requests, and returns at
+  most the configured number of most-active chunks without loading terrain.
 
 Missing Pufferfish nodes are treated as rank zero, so a configuration reload,
 refund, or reset is always safe.
@@ -65,6 +74,10 @@ underlying gameplay systems and integration hooks are designed.
 ## Build
 
 Run `gradlew.bat build`. The output JAR is placed in `build/libs/`.
+
+`gradlew.bat runClient` includes JourneyMap 1.21.1-6.0.7 for local testing.
+JourneyMap stays an optional client integration in published artifacts; it is
+not bundled and is never required by a dedicated server.
 
 ## Releases
 

@@ -100,6 +100,21 @@ config="${mod_id}.mixins.json"
     ordering="AFTER"
     side="BOTH"
 
+[[dependencies.${mod_id}]]
+    modId="thermia"
+    type="optional"
+    versionRange="[0.2.1-beta,)"
+    ordering="AFTER"
+    side="BOTH"
+
+# JourneyMap is an optional client-side renderer for shared trail activity.
+[[dependencies.${mod_id}]]
+    modId="journeymap"
+    type="optional"
+    versionRange="${journeymap_version_range}"
+    ordering="AFTER"
+    side="CLIENT"
+
 # Features are specific properties of the game environment, that you may want to declare you require. This example declares
 # that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't
 # stop your mod loading on the server for example.

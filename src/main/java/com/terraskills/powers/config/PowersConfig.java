@@ -63,6 +63,16 @@ public final class PowersConfig {
     public static final ModConfigSpec.DoubleValue PACK_ANIMAL_BACK_FLAT_KG_PER_RANK;
     public static final ModConfigSpec.DoubleValue PACK_ANIMAL_JUMP_LIMIT_PERCENT_PER_RANK;
     public static final ModConfigSpec.DoubleValue PACK_ANIMAL_STEP_LIMIT_PERCENT_PER_RANK;
+    public static final ModConfigSpec.IntValue TRAIL_ACTIVITY_DECAY_TICKS;
+    public static final ModConfigSpec.DoubleValue TRAIL_ACTIVITY_NORMALIZATION_LOW;
+    public static final ModConfigSpec.DoubleValue TRAIL_ACTIVITY_NORMALIZATION_HIGH;
+    public static final ModConfigSpec.IntValue TRAIL_ACTIVITY_SAMPLE_INTERVAL_TICKS;
+    public static final ModConfigSpec.IntValue TRAIL_ACTIVITY_CONTRIBUTION_WINDOW_TICKS;
+    public static final ModConfigSpec.DoubleValue TRAIL_ACTIVITY_CONTRIBUTION_CAP_BLOCKS;
+    public static final ModConfigSpec.DoubleValue TRAIL_ACTIVITY_MAX_SAMPLE_DISTANCE;
+    public static final ModConfigSpec.IntValue TRAIL_ACTIVITY_HEATMAP_MAX_RADIUS_CHUNKS;
+    public static final ModConfigSpec.IntValue TRAIL_ACTIVITY_HEATMAP_MAX_ENTRIES;
+    public static final ModConfigSpec.IntValue TRAIL_ACTIVITY_HEATMAP_REQUEST_COOLDOWN_TICKS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -174,6 +184,32 @@ public final class PowersConfig {
                 .defineInRange("packAnimalJumpLimitPercentPerRank", 0.10D, 0.0D, 10.0D);
         PACK_ANIMAL_STEP_LIMIT_PERCENT_PER_RANK = builder.comment("Pack Animal Step Limit skill: load-limit increase per rank before donkey/mule step height is reduced.")
                 .defineInRange("packAnimalStepLimitPercentPerRank", 0.10D, 0.0D, 10.0D);
+        builder.pop();
+        builder.push("explorationPowers");
+        builder.push("trailActivity");
+        TRAIL_ACTIVITY_DECAY_TICKS = builder.comment("Game ticks for an untouched area's activity to decay to zero. Tune after gameplay testing.")
+                .defineInRange("decayTicks", 72000, 20, 2_400_000);
+        TRAIL_ACTIVITY_NORMALIZATION_LOW = builder.comment("Raw shared activity at which normalized activity A starts at zero.")
+                .defineInRange("normalizationLow", 0.0D, 0.0D, 1_000_000.0D);
+        TRAIL_ACTIVITY_NORMALIZATION_HIGH = builder.comment("Raw shared activity at which normalized activity A reaches one. Tune after gameplay testing.")
+                .defineInRange("normalizationHigh", 320.0D, 0.0001D, 1_000_000.0D);
+        TRAIL_ACTIVITY_SAMPLE_INTERVAL_TICKS = builder.comment("How often eligible player displacement is sampled.")
+                .defineInRange("sampleIntervalTicks", 10, 1, 1200);
+        TRAIL_ACTIVITY_CONTRIBUTION_WINDOW_TICKS = builder.comment("Length of the per-player contribution cap window.")
+                .defineInRange("contributionWindowTicks", 1200, 20, 72_000);
+        TRAIL_ACTIVITY_CONTRIBUTION_CAP_BLOCKS = builder.comment("Maximum eligible displacement one player can add to shared activity in each cap window.")
+                .defineInRange("contributionCapBlocks", 128.0D, 0.0D, 100_000.0D);
+        TRAIL_ACTIVITY_MAX_SAMPLE_DISTANCE = builder.comment("Displacements above this between samples are ignored as teleports or discontinuities.")
+                .defineInRange("maxSampleDistance", 12.0D, 0.1D, 1024.0D);
+        TRAIL_ACTIVITY_HEATMAP_MAX_RADIUS_CHUNKS = builder.comment("Maximum chunk radius returned to a JourneyMap activity-heatmap request.",
+                        "Map views wider than this are cropped around their centre; this bounds server work and packet size.")
+                .defineInRange("heatmapMaxRadiusChunks", 48, 1, 256);
+        TRAIL_ACTIVITY_HEATMAP_MAX_ENTRIES = builder.comment("Maximum non-zero activity chunks returned in one JourneyMap heatmap response.",
+                        "When a view has more entries, the most active chunks are returned.")
+                .defineInRange("heatmapMaxEntries", 1024, 1, 4096);
+        TRAIL_ACTIVITY_HEATMAP_REQUEST_COOLDOWN_TICKS = builder.comment("Minimum ticks between one player's JourneyMap heatmap requests.")
+                .defineInRange("heatmapRequestCooldownTicks", 20, 1, 1200);
+        builder.pop();
         builder.pop();
         SPEC = builder.build();
     }
