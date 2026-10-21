@@ -11,7 +11,8 @@ so resets and refunds take effect without a second progression store.
   collapse-starting blocks. The radius is 0--4 blocks and the cooldown is five
   seconds. This is an inspection only, not a collapse prediction.
 - **Careful Mining:** `careful_mining_1` through `_5` reduces *only* TFC's real
-  collapse initiation roll for the player who broke the block by 10% per rank.
+  collapse initiation roll for the player who broke the block by 10% per rank
+  by default.
   The fake-warning roll itself and non-mining paths are untouched; because TFC
   evaluates that roll after a failed real-collapse roll, fake warnings can
   occur more often for trained miners.
@@ -21,19 +22,23 @@ so resets and refunds take effect without a second progression store.
   every second for responsive prediction while the server continues to read the
   authoritative Pufferfish state.
 - **Heights Training:** uses `heights_training_*`, falling back to the
-  progress-preserving `mine_safety_*` IDs, to add 0.5 safe blocks per rank.
+  progress-preserving `mine_safety_*` IDs, to add 0.5 safe blocks per rank by
+  default.
 - **Excavation Reach:** `careful_excavation_1` through `_5` grant +0.5 block
-  interaction range per rank while a main-hand pickaxe or shovel is held. The
-  transient modifier is removed immediately when the tool or skill no longer
-  qualifies, and replaces the old `terra:excavation_reach` KubeJS modifier.
-- **Tool Conservation:** `tool_conservation_1` through `_5` has one 3--15%
-  roll per TFC pickaxe/shovel mining charge. A successful roll skips the whole
-  charge before TFC and Unbreaking handle durability; combat and unrelated
-  item-use wear are not intercepted. Brutish Mining doubles this chance.
+  interaction range per rank by default while a main-hand pickaxe or shovel is
+  held. The transient modifier is removed immediately when the tool or skill
+  no longer qualifies, and replaces the old `terra:excavation_reach` KubeJS
+  modifier.
+- **Tool Conservation:** `tool_conservation_1` through `_5` has one 5--25%
+  roll per TFC pickaxe/shovel mining charge by default. A successful roll skips
+  the whole charge before TFC and Unbreaking handle durability; combat and
+  unrelated item-use wear are not intercepted. Brutish Mining applies a
+  separately configurable multiplier to this chance.
 - **Brutish Mining:** the `B` key toggles this server-authoritative mode for
-  players with Mining IV and a Brutish Mining rank. It adds 50--250% mining
-  speed and applies 3x--5x pickaxe/shovel mining wear, carrying fractional
-  charges per tool. It resets when the player dies or logs out.
+  players with Mining IV and a Brutish Mining rank by default. It adds 50--250%
+  mining speed and applies 3x--5x pickaxe/shovel mining wear by default,
+  carrying fractional charges per tool. It resets when the player dies or logs
+  out.
 - **Careful Eye:** `careful_eye_1` through `_5` make one 0.2--1.0% server-side
   roll per eligible natural TFC raw-rock break. Player-placed raw rock is
   persistently excluded; drops use editable, weighted TFC worldgen-derived
@@ -49,6 +54,14 @@ so resets and refunds take effect without a second progression store.
   `kubejs:copper_braced_shore=0.10,1` and
   `kubejs:black_steel_shore=0.45,4`. With the default +10% per triggering
   miner rank, those give 20--60% and 85--95% at their intended ranks.
+- **Water Conservation:** reduces travel-caused thirst only, by 8% per rank by
+  default. Heat and other thirst sources remain unchanged. Its per-rank
+  reduction is server-configurable.
+- **Scrambling:** increases upward ladder/vine speed by 10% per rank by
+  default. Its per-rank bonus is server-configurable.
+- **Expedition Packing:** reduces the effective weight of explicitly tagged
+  supply shells by 6% per rank by default, never their contents. Its per-rank
+  reduction is server-configurable.
 - **TFC Astikor handcarts:** when TFC Astikor Carts and Warfactory Ultimate
   Weight are installed, a handcart holds five times the puller's remaining
   Ultimate Weight capacity. It applies TFC's overburdened effect between that
@@ -67,6 +80,13 @@ so resets and refunds take effect without a second progression store.
 
 Missing Pufferfish nodes are treated as rank zero, so a configuration reload,
 refund, or reset is always safe.
+
+## Server balance configuration
+
+All numeric skill-effect magnitudes are configurable in the server-generated
+`terraskillspowers-server.toml`. The comments next to each setting show its
+default and units; values written as decimals use `0.05 = 5%`. Datapacks still
+control skill definitions, prerequisites, and the number of ranks.
 
 The broader proposed trees remain deliberately unimplemented until their
 underlying gameplay systems and integration hooks are designed.

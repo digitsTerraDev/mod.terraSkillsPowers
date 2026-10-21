@@ -8,10 +8,28 @@ import java.util.List;
 public final class PowersConfig {
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> CAREFUL_EYE_GEMS;
+    public static final ModConfigSpec.DoubleValue CAREFUL_EYE_DISCOVERY_CHANCE_PER_RANK;
     public static final ModConfigSpec.IntValue HAZARD_SHORE_RADIUS;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> HAZARD_SHORES;
     public static final ModConfigSpec.DoubleValue HAZARD_CHANCE_PER_RANK;
     public static final ModConfigSpec.BooleanValue HAZARD_ALLOW_AUTOMATED_PLACEMENT;
+    public static final ModConfigSpec.DoubleValue TOOL_CONSERVATION_CHANCE_PER_RANK;
+    public static final ModConfigSpec.DoubleValue CAREFUL_MINING_COLLAPSE_REDUCTION_PER_RANK;
+    public static final ModConfigSpec.DoubleValue MINING_SPEED_BONUS_PER_RANK;
+    public static final ModConfigSpec.DoubleValue DEEP_MINING_SPEED_BONUS_PER_RANK;
+    public static final ModConfigSpec.DoubleValue STONE_MINING_SPEED_BONUS_PER_RANK;
+    public static final ModConfigSpec.DoubleValue EXCAVATING_SPEED_BONUS_PER_RANK;
+    public static final ModConfigSpec.IntValue BRUTISH_MINING_REQUIRED_MINING_RANK;
+    public static final ModConfigSpec.DoubleValue BRUTISH_MINING_SPEED_BONUS_PER_RANK;
+    public static final ModConfigSpec.DoubleValue BRUTISH_MINING_WEAR_BASE_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue BRUTISH_MINING_WEAR_MULTIPLIER_PER_RANK;
+    public static final ModConfigSpec.DoubleValue BRUTISH_MINING_TOOL_CONSERVATION_CHANCE_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue HEIGHTS_TRAINING_SAFE_FALL_BLOCKS_PER_RANK;
+    public static final ModConfigSpec.DoubleValue CAREFUL_EXCAVATION_REACH_PER_RANK;
+    public static final ModConfigSpec.IntValue SUPPORT_ASSESSMENT_RADIUS_AT_RANK_ONE;
+    public static final ModConfigSpec.IntValue SUPPORT_ASSESSMENT_ADDITIONAL_RADIUS_PER_RANK;
+    public static final ModConfigSpec.IntValue SUPPORT_ASSESSMENT_MAX_RADIUS;
+    public static final ModConfigSpec.IntValue SUPPORT_ASSESSMENT_COOLDOWN_TICKS;
     public static final ModConfigSpec.DoubleValue CARRY_CAPACITY_PERCENT_PER_RANK;
     public static final ModConfigSpec.DoubleValue CARRY_CAPACITY_FLAT_KG_PER_RANK;
     public static final ModConfigSpec.DoubleValue RIDING_PULL_PERCENT_PER_RANK;
@@ -73,6 +91,13 @@ public final class PowersConfig {
     public static final ModConfigSpec.IntValue TRAIL_ACTIVITY_HEATMAP_MAX_RADIUS_CHUNKS;
     public static final ModConfigSpec.IntValue TRAIL_ACTIVITY_HEATMAP_MAX_ENTRIES;
     public static final ModConfigSpec.IntValue TRAIL_ACTIVITY_HEATMAP_REQUEST_COOLDOWN_TICKS;
+    public static final ModConfigSpec.DoubleValue WATER_CONSERVATION_TRAVEL_THIRST_REDUCTION_PER_RANK;
+    public static final ModConfigSpec.DoubleValue SCRAMBLING_UPWARD_SPEED_BONUS_PER_RANK;
+    public static final ModConfigSpec.DoubleValue EXPEDITION_PACKING_WEIGHT_REDUCTION_PER_RANK;
+    public static final ModConfigSpec.DoubleValue TRAIL_ACTIVITY_SPEED_BONUS_PER_RANK;
+    public static final ModConfigSpec.DoubleValue ENDURANCE_SPRINT_EXHAUSTION_REDUCTION_PER_RANK;
+    public static final ModConfigSpec.DoubleValue ACCLIMATIZATION_HARMFUL_EXPOSURE_REDUCTION_PER_RANK;
+    public static final ModConfigSpec.DoubleValue QUIET_PASSAGE_DETECTION_REDUCTION_PER_RANK;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -87,6 +112,8 @@ public final class PowersConfig {
                         "andesite=opal@1", "dacite=opal@1", "quartzite=amethyst@1", "slate=amethyst@1",
                         "phyllite=amethyst@1", "schist=amethyst@1", "gneiss=amethyst@1", "marble=amethyst@1,lapis_lazuli@1,ruby@1"),
                         value -> value instanceof String text && text.contains("="));
+        CAREFUL_EYE_DISCOVERY_CHANCE_PER_RANK = builder.comment("Careful Eye: chance per rank to discover one gem from an eligible raw rock (0.002 = 0.2%).")
+                .defineInRange("discoveryChancePerRank", 0.002D, 0.0D, 1.0D);
         builder.pop();
         builder.push("hazardManagement");
         HAZARD_SHORE_RADIUS = builder.comment("Maximum block distance from a falling collapse block at which a shore can arrest its front.")
@@ -100,6 +127,46 @@ public final class PowersConfig {
                 .defineInRange("chancePerRank", 0.10D, 0.0D, 1.0D);
         HAZARD_ALLOW_AUTOMATED_PLACEMENT = builder.comment("Allow shore placement with no player entity, for example dispensers or mod automation.")
                 .define("allowAutomatedPlacement", false);
+        builder.pop();
+        builder.push("miningPowers");
+        TOOL_CONSERVATION_CHANCE_PER_RANK = builder.comment("Tool Conservation: chance per rank to skip one eligible mining durability charge (0.05 = 5%).",
+                        "Brutish Mining applies its separately configurable chance multiplier; the final value is capped at 100%.")
+                .defineInRange("toolConservationChancePerRank", 0.05D, 0.0D, 1.0D);
+        CAREFUL_MINING_COLLAPSE_REDUCTION_PER_RANK = builder.comment("Careful Mining: reduction per rank of the triggering miner's real TFC collapse roll (0.10 = 10%).")
+                .defineInRange("carefulMiningCollapseReductionPerRank", 0.10D, 0.0D, 1.0D);
+        MINING_SPEED_BONUS_PER_RANK = builder.comment("Mining: pickaxe mining-speed bonus per rank (0.05 = 5%).")
+                .defineInRange("miningSpeedBonusPerRank", 0.05D, 0.0D, 10.0D);
+        DEEP_MINING_SPEED_BONUS_PER_RANK = builder.comment("Deep Mining: below-Y-0 pickaxe mining-speed bonus per rank (0.05 = 5%).")
+                .defineInRange("deepMiningSpeedBonusPerRank", 0.05D, 0.0D, 10.0D);
+        STONE_MINING_SPEED_BONUS_PER_RANK = builder.comment("Stone Mining: raw-stone pickaxe mining-speed bonus per rank (0.04 = 4%).")
+                .defineInRange("stoneMiningSpeedBonusPerRank", 0.04D, 0.0D, 10.0D);
+        EXCAVATING_SPEED_BONUS_PER_RANK = builder.comment("Excavating: shovel mining-speed bonus per rank (0.03 = 3%).")
+                .defineInRange("excavatingSpeedBonusPerRank", 0.03D, 0.0D, 10.0D);
+        BRUTISH_MINING_REQUIRED_MINING_RANK = builder.comment("Minimum Mining rank required before Brutish Mining can be toggled.")
+                .defineInRange("brutishMiningRequiredMiningRank", 4, 0, 100);
+        BRUTISH_MINING_SPEED_BONUS_PER_RANK = builder.comment("Brutish Mining: mining-speed bonus per active rank (0.50 = 50%).")
+                .defineInRange("brutishMiningSpeedBonusPerRank", 0.50D, 0.0D, 10.0D);
+        BRUTISH_MINING_WEAR_BASE_MULTIPLIER = builder.comment("Brutish Mining: mining-durability multiplier before its active rank is added.",
+                        "With the default 2.5 base and 0.5 per rank, ranks I-V cost 3x-5x durability.")
+                .defineInRange("brutishMiningWearBaseMultiplier", 2.5D, 0.0D, 100.0D);
+        BRUTISH_MINING_WEAR_MULTIPLIER_PER_RANK = builder.comment("Brutish Mining: additional mining-durability multiplier per active rank.")
+                .defineInRange("brutishMiningWearMultiplierPerRank", 0.5D, 0.0D, 100.0D);
+        BRUTISH_MINING_TOOL_CONSERVATION_CHANCE_MULTIPLIER = builder.comment("Brutish Mining: multiplier applied to Tool Conservation's chance while Brutish Mining is active.")
+                .defineInRange("brutishMiningToolConservationChanceMultiplier", 2.0D, 0.0D, 100.0D);
+        HEIGHTS_TRAINING_SAFE_FALL_BLOCKS_PER_RANK = builder.comment("Heights Training: safe-fall distance added per rank, in blocks.")
+                .defineInRange("heightsTrainingSafeFallBlocksPerRank", 0.5D, 0.0D, 128.0D);
+        CAREFUL_EXCAVATION_REACH_PER_RANK = builder.comment("Careful Excavation: block interaction-range bonus per rank while holding a pickaxe or shovel.")
+                .defineInRange("carefulExcavationReachPerRank", 0.5D, 0.0D, 128.0D);
+        builder.push("supportAssessment");
+        SUPPORT_ASSESSMENT_RADIUS_AT_RANK_ONE = builder.comment("Support Assessment scan radius at rank I, in blocks.")
+                .defineInRange("radiusAtRankOne", 0, 0, 32);
+        SUPPORT_ASSESSMENT_ADDITIONAL_RADIUS_PER_RANK = builder.comment("Support Assessment scan radius added for every rank after I, in blocks.")
+                .defineInRange("additionalRadiusPerRank", 1, 0, 32);
+        SUPPORT_ASSESSMENT_MAX_RADIUS = builder.comment("Safety cap for Support Assessment's calculated scan radius, in blocks.")
+                .defineInRange("maxRadius", 16, 0, 32);
+        SUPPORT_ASSESSMENT_COOLDOWN_TICKS = builder.comment("Support Assessment cooldown, in game ticks (20 ticks = 1 second).")
+                .defineInRange("cooldownTicks", 100, 0, 72_000);
+        builder.pop();
         builder.pop();
         builder.push("weightPowers");
         CARRY_CAPACITY_PERCENT_PER_RANK = builder.comment("Carry Capacity % skill: percent capacity increase per unlocked rank (0.10 = 10%).")
@@ -186,6 +253,22 @@ public final class PowersConfig {
                 .defineInRange("packAnimalStepLimitPercentPerRank", 0.10D, 0.0D, 10.0D);
         builder.pop();
         builder.push("explorationPowers");
+        WATER_CONSERVATION_TRAVEL_THIRST_REDUCTION_PER_RANK = builder.comment("Water Conservation: reduction per rank of thirst caused by travel only (0.08 = 8%).",
+                        "Temperature/heat thirst remains unchanged.")
+                .defineInRange("waterConservationTravelThirstReductionPerRank", 0.08D, 0.0D, 1.0D);
+        SCRAMBLING_UPWARD_SPEED_BONUS_PER_RANK = builder.comment("Scrambling: upward ladder/vine speed bonus per rank (0.10 = 10%).")
+                .defineInRange("scramblingUpwardSpeedBonusPerRank", 0.10D, 0.0D, 1.0D);
+        EXPEDITION_PACKING_WEIGHT_REDUCTION_PER_RANK = builder.comment("Expedition Packing: effective-weight reduction per rank for tagged supply shells (0.06 = 6%).",
+                        "Container contents are never discounted.")
+                .defineInRange("expeditionPackingWeightReductionPerRank", 0.06D, 0.0D, 1.0D);
+        TRAIL_ACTIVITY_SPEED_BONUS_PER_RANK = builder.comment("Trailblazing and Well Trodden: common movement-speed bonus per rank in their activity blend (0.03 = 3%).")
+                .defineInRange("trailActivitySpeedBonusPerRank", 0.03D, 0.0D, 10.0D);
+        ENDURANCE_SPRINT_EXHAUSTION_REDUCTION_PER_RANK = builder.comment("Endurance: sprinting-exhaustion reduction per rank (0.05 = 5%).")
+                .defineInRange("enduranceSprintExhaustionReductionPerRank", 0.05D, 0.0D, 1.0D);
+        ACCLIMATIZATION_HARMFUL_EXPOSURE_REDUCTION_PER_RANK = builder.comment("Acclimatization: harmful Thermia heat/cold exposure reduction per rank (0.05 = 5%).")
+                .defineInRange("acclimatizationHarmfulExposureReductionPerRank", 0.05D, 0.0D, 1.0D);
+        QUIET_PASSAGE_DETECTION_REDUCTION_PER_RANK = builder.comment("Quiet Passage: TFC prey/predator detection-radius reduction per rank while sneaking (0.05 = 5%).")
+                .defineInRange("quietPassageDetectionReductionPerRank", 0.05D, 0.0D, 1.0D);
         builder.push("trailActivity");
         TRAIL_ACTIVITY_DECAY_TICKS = builder.comment("Game ticks for an untouched area's activity to decay to zero. Tune after gameplay testing.")
                 .defineInRange("decayTicks", 72000, 20, 2_400_000);

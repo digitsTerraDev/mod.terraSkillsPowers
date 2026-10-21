@@ -41,8 +41,9 @@ public final class TrailActivityPowers {
         if (trail == 0 && trodden == 0) return;
         double activity = smoothedActivity(player.serverLevel(), player.chunkPosition().x, player.chunkPosition().z,
                 player.serverLevel().getGameTime());
-        // The weights add to one. Equal ranks therefore remain a single 3% per-rank maximum rather than stacking.
-        double bonus = 0.03D * trail * (1.0D - activity) + 0.03D * trodden * activity;
+        // The weights add to one. Equal ranks therefore remain a single configured per-rank maximum rather than stacking.
+        double perRankBonus = PowersConfig.TRAIL_ACTIVITY_SPEED_BONUS_PER_RANK.get();
+        double bonus = perRankBonus * trail * (1.0D - activity) + perRankBonus * trodden * activity;
         if (bonus > 0.0D) speed.addOrUpdateTransientModifier(new AttributeModifier(SPEED_ID, bonus,
                 AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
     }

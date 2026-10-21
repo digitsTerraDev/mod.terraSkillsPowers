@@ -27,7 +27,8 @@ public final class CarefulEyeApi {
         }
         if (CarefulEyeProvenance.get(level).consumePlaced(pos)) return Optional.empty();
         int rank = SkillRanks.rank(player, "careful_eye");
-        if (rank == 0 || player.getRandom().nextFloat() >= 0.002F * rank) {
+        double discoveryChance = Math.clamp(PowersConfig.CAREFUL_EYE_DISCOVERY_CHANCE_PER_RANK.get() * rank, 0.0D, 1.0D);
+        if (rank == 0 || player.getRandom().nextFloat() >= discoveryChance) {
             return Optional.empty();
         }
 

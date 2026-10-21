@@ -1,5 +1,6 @@
 package com.terraskills.powers.exploration;
 
+import com.terraskills.powers.config.PowersConfig;
 import com.terraskills.powers.skill.SkillRanks;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -48,7 +49,9 @@ public final class TravelThirstLedger {
         double movementFraction = consumeTravelFraction(player.getUUID(), 4.0D);
         if (rank == 0 || movementFraction <= 0.0D) return originalLoss;
         double multiplier = Math.max(1.0D, 1.0D + temperatureContribution);
-        double discount = -originalLoss / multiplier * movementFraction * (0.05D * rank);
+        double reduction = Math.clamp(PowersConfig.WATER_CONSERVATION_TRAVEL_THIRST_REDUCTION_PER_RANK.get() * rank,
+                0.0D, 1.0D);
+        double discount = -originalLoss / multiplier * movementFraction * reduction;
         return (float) Math.min(0.0D, originalLoss + discount);
     }
 

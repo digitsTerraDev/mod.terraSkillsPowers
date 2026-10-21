@@ -1,5 +1,6 @@
 package com.terraskills.powers.mining;
 
+import com.terraskills.powers.config.PowersConfig;
 import com.terraskills.powers.skill.SkillRanks;
 import net.dries007.tfc.util.Helpers;
 import net.minecraft.tags.ItemTags;
@@ -21,7 +22,9 @@ public final class MiningDurability {
                 && stack == player.getMainHandItem() && (stack.is(ItemTags.PICKAXES) || stack.is(ItemTags.SHOVELS))) {
             int brutishRank = BrutishMining.activeRank(player);
             int rank = SkillRanks.rank(player, "tool_conservation");
-            float conservationChance = 0.03F * rank * (brutishRank > 0 ? 2 : 1);
+            float conservationChance = (float) Math.clamp(PowersConfig.TOOL_CONSERVATION_CHANCE_PER_RANK.get()
+                    * rank * (brutishRank > 0 ? PowersConfig.BRUTISH_MINING_TOOL_CONSERVATION_CHANCE_MULTIPLIER.get() : 1.0D),
+                    0.0D, 1.0D);
             if (conservationChance > 0 && player.getRandom().nextFloat() < conservationChance) return;
 
             double charge = brutishRank > 0 ? BrutishMining.wearMultiplier(brutishRank) : 1D;

@@ -1,5 +1,6 @@
 package com.terraskills.powers.mixin;
 
+import com.terraskills.powers.config.PowersConfig;
 import com.terraskills.powers.exploration.TravelThirstLedger;
 import com.terraskills.powers.skill.SkillRanks;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,8 +17,10 @@ abstract class MovementExhaustionMixin {
         boolean qualifyingSprint = exhaustion > 0.0F && player.isSprinting() && player.onGround()
                 && !player.isSpectator() && !player.isPassenger() && !player.isFallFlying()
                 && !player.getAbilities().flying && !player.isSwimming() && !player.isInWater();
+        double enduranceReduction = Math.clamp(PowersConfig.ENDURANCE_SPRINT_EXHAUSTION_REDUCTION_PER_RANK.get()
+                * Math.clamp(SkillRanks.endurance(player), 0, 5), 0.0D, 1.0D);
         float adjusted = qualifyingSprint
-                ? (float) (exhaustion * (1.0D - 0.05D * Math.clamp(SkillRanks.endurance(player), 0, 5)))
+                ? (float) (exhaustion * (1.0D - enduranceReduction))
                 : exhaustion;
         if (qualifyingSprint && adjusted > 0.0F) TravelThirstLedger.beginMovement(player);
         try {

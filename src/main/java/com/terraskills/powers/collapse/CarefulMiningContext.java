@@ -1,5 +1,6 @@
 package com.terraskills.powers.collapse;
 
+import com.terraskills.powers.config.PowersConfig;
 import com.terraskills.powers.skill.SkillRanks;
 import net.dries007.tfc.common.recipes.CollapseRecipe;
 import net.minecraft.core.BlockPos;
@@ -16,7 +17,11 @@ public final class CarefulMiningContext {
     public static boolean tryTriggerCollapse(Level level, BlockPos pos, ServerPlayer player) {
         int rank = SkillRanks.rank(player, "careful_mining");
         TRIGGERING_PLAYER.set(player);
-        if (rank > 0) REAL_COLLAPSE_MULTIPLIER.set(1.0D - 0.10D * rank);
+        if (rank > 0) {
+            double reduction = Math.clamp(PowersConfig.CAREFUL_MINING_COLLAPSE_REDUCTION_PER_RANK.get() * rank,
+                    0.0D, 1.0D);
+            REAL_COLLAPSE_MULTIPLIER.set(1.0D - reduction);
+        }
         try {
             return CollapseRecipe.tryTriggerCollapse(level, pos);
         } finally {
@@ -27,7 +32,8 @@ public final class CarefulMiningContext {
 
     /** Used only by the ordinal-zero random roll in TFC's tryTriggerCollapse method. */
     public static float adjustRealCollapseRoll(float roll) {
-        return (float) (roll / REAL_COLLAPSE_MULTIPLIER.get());
+        double multiplier = REAL_COLLAPSE_MULTIPLIER.get();
+        return multiplier <= 0.0D ? Float.POSITIVE_INFINITY : (float) (roll / multiplier);
     }
 
     /** The miner responsible for the current TFC collapse initiation, if any. */

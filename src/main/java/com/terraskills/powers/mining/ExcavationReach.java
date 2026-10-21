@@ -1,5 +1,6 @@
 package com.terraskills.powers.mining;
 
+import com.terraskills.powers.config.PowersConfig;
 import com.terraskills.powers.skill.SkillRanks;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,7 +43,8 @@ public final class ExcavationReach {
             STATES.put(player.getUUID(), new State(true));
             return;
         }
-        range.addOrUpdateTransientModifier(new AttributeModifier(MODIFIER_ID, 0.5D * rank,
+        range.addOrUpdateTransientModifier(new AttributeModifier(MODIFIER_ID,
+                PowersConfig.CAREFUL_EXCAVATION_REACH_PER_RANK.get() * rank,
                 AttributeModifier.Operation.ADD_VALUE));
         STATES.put(player.getUUID(), new State(true));
     }

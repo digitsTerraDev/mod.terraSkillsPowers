@@ -1,5 +1,6 @@
 package com.terraskills.powers.mining;
 
+import com.terraskills.powers.config.PowersConfig;
 import com.terraskills.powers.skill.SkillRanks;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -31,7 +32,8 @@ public final class BrutishMining {
     }
 
     public static int rank(ServerPlayer player) {
-        return SkillRanks.mining(player) >= 4 ? SkillRanks.rank(player, "brutish_mining") : 0;
+        return SkillRanks.mining(player) >= PowersConfig.BRUTISH_MINING_REQUIRED_MINING_RANK.get()
+                ? SkillRanks.rank(player, "brutish_mining") : 0;
     }
 
     public static int activeRank(ServerPlayer player) {
@@ -39,7 +41,8 @@ public final class BrutishMining {
     }
 
     public static double wearMultiplier(int rank) {
-        return 2.5D + 0.5D * rank;
+        return Math.max(0.0D, PowersConfig.BRUTISH_MINING_WEAR_BASE_MULTIPLIER.get()
+                + PowersConfig.BRUTISH_MINING_WEAR_MULTIPLIER_PER_RANK.get() * rank);
     }
 
     public static void clear(UUID playerId) {

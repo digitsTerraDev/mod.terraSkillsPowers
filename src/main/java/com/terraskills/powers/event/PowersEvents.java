@@ -58,7 +58,6 @@ import java.util.UUID;
 
 @EventBusSubscriber(modid = TerraSkillsPowers.MOD_ID)
 public final class PowersEvents {
-    private static final long ASSESSMENT_COOLDOWN_TICKS = 100L;
     private static final double HANDCART_CAPACITY_MULTIPLIER = 5.0D;
     private static final double HANDCART_OVERLOAD_ALLOWANCE = 1.20D;
     private static final double SOFT_CARRY_CAPACITY_MULTIPLIER = 5.0D / 6.0D;
@@ -87,17 +86,21 @@ public final class PowersEvents {
         float multiplier = 1.0F;
 
         if (tool.is(ItemTags.PICKAXES)) {
-            multiplier += 0.05F * SkillRanks.mining(player);
-            if (player.blockPosition().getY() < 0) multiplier += 0.05F * SkillRanks.deepMining(player);
-            if (state.is(TFCTags.Blocks.STONES_RAW)) multiplier += 0.04F * SkillRanks.stoneMining(player);
+            multiplier += (float) (PowersConfig.MINING_SPEED_BONUS_PER_RANK.get() * SkillRanks.mining(player));
+            if (player.blockPosition().getY() < 0) {
+                multiplier += (float) (PowersConfig.DEEP_MINING_SPEED_BONUS_PER_RANK.get() * SkillRanks.deepMining(player));
+            }
+            if (state.is(TFCTags.Blocks.STONES_RAW)) {
+                multiplier += (float) (PowersConfig.STONE_MINING_SPEED_BONUS_PER_RANK.get() * SkillRanks.stoneMining(player));
+            }
         }
         if (tool.is(ItemTags.SHOVELS) && state.is(BlockTags.MINEABLE_WITH_SHOVEL)) {
-            multiplier += 0.03F * SkillRanks.excavating(player);
+            multiplier += (float) (PowersConfig.EXCAVATING_SPEED_BONUS_PER_RANK.get() * SkillRanks.excavating(player));
         }
         if (tool.is(ItemTags.PICKAXES) || tool.is(ItemTags.SHOVELS)) {
             int brutishRank = player instanceof ServerPlayer server ? BrutishMining.activeRank(server)
                     : ClientSkillRanks.brutishActive() ? ClientSkillRanks.brutishMining() : 0;
-            multiplier += 0.50F * brutishRank;
+            multiplier += (float) (PowersConfig.BRUTISH_MINING_SPEED_BONUS_PER_RANK.get() * brutishRank);
         }
         if (multiplier != 1.0F) event.setNewSpeed(event.getNewSpeed() * multiplier);
     }
@@ -105,7 +108,8 @@ public final class PowersEvents {
     @SubscribeEvent
     public static void onFall(LivingFallEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            event.setDistance(Math.max(0, event.getDistance() - 0.5F * SkillRanks.heightsTraining(player)));
+            event.setDistance(Math.max(0.0F, event.getDistance() - (float) (PowersConfig.HEIGHTS_TRAINING_SAFE_FALL_BLOCKS_PER_RANK.get()
+                    * SkillRanks.heightsTraining(player))));
         }
     }
 
@@ -145,15 +149,18 @@ public final class PowersEvents {
         ResourceKey<net.minecraft.world.level.Level> dimension = player.level().dimension();
         long now = player.serverLevel().getGameTime();
         AssessmentCooldown previous = LAST_ASSESSMENT.get(player.getUUID());
+        long cooldown = Math.max(0L, PowersConfig.SUPPORT_ASSESSMENT_COOLDOWN_TICKS.get());
         if (previous != null && previous.dimension().equals(dimension) && now >= previous.gameTime()
-                && now - previous.gameTime() < ASSESSMENT_COOLDOWN_TICKS) {
+                && now - previous.gameTime() < cooldown) {
             player.displayClientMessage(Component.translatable("message.terraskillspowers.assessment.cooldown")
                     .withStyle(ChatFormatting.GRAY), true);
             return;
         }
         LAST_ASSESSMENT.put(player.getUUID(), new AssessmentCooldown(dimension, now));
 
-        int radius = rank - 1;
+        long requestedRadius = (long) PowersConfig.SUPPORT_ASSESSMENT_RADIUS_AT_RANK_ONE.get()
+                + (long) Math.max(0, rank - 1) * PowersConfig.SUPPORT_ASSESSMENT_ADDITIONAL_RADIUS_PER_RANK.get();
+        int radius = (int) Math.clamp(requestedRadius, 0L, (long) PowersConfig.SUPPORT_ASSESSMENT_MAX_RADIUS.get());
         BlockPos center = event.getPos();
         int candidates = (int) Support.findUnsupportedPositions(player.serverLevel(),
                         center.offset(-radius, -radius, -radius), center.offset(radius, radius, radius)).stream()

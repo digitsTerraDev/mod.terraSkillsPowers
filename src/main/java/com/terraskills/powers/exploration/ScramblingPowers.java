@@ -1,5 +1,6 @@
 package com.terraskills.powers.exploration;
 
+import com.terraskills.powers.config.PowersConfig;
 import com.terraskills.powers.skill.SkillRanks;
 import net.minecraft.world.entity.player.Player;
 
@@ -10,6 +11,7 @@ public final class ScramblingPowers {
     public static double multiplier(Player player) {
         if (player.isSpectator() || player.isPassenger() || player.isFallFlying() || player.getAbilities().flying
                 || player.isSwimming() || player.isInWater()) return 1.0D;
-        return 1.0D + 0.05D * Math.clamp(SkillRanks.scrambling(player), 0, 5);
+        return 1.0D + PowersConfig.SCRAMBLING_UPWARD_SPEED_BONUS_PER_RANK.get()
+                * Math.clamp(SkillRanks.scrambling(player), 0, 5);
     }
 }

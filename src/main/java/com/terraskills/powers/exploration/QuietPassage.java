@@ -1,5 +1,6 @@
 package com.terraskills.powers.exploration;
 
+import com.terraskills.powers.config.PowersConfig;
 import com.terraskills.powers.skill.SkillRanks;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -33,7 +34,9 @@ public final class QuietPassage {
     }
 
     private static double scale(ServerPlayer player) {
-        return 1.0D - 0.05D * Math.clamp(SkillRanks.quietPassage(player), 0, 5);
+        double reduction = PowersConfig.QUIET_PASSAGE_DETECTION_REDUCTION_PER_RANK.get()
+                * Math.clamp(SkillRanks.quietPassage(player), 0, 5);
+        return Math.clamp(1.0D - reduction, 0.0D, 1.0D);
     }
 
     private static boolean isTfcPredator(Entity entity) {
